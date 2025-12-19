@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace SistemaTurnos.Api.DTOs
+namespace SistemaTurnos.Application.DTOs
 {
     public class PersonaCreateDto
     {

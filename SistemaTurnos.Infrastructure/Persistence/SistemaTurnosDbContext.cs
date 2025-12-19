@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SistemaTurnos.Domain;
 using SistemaTurnos.Domain.Entities;
+
+namespace SistemaTurnos.Infrastructure.Persistence;
 
 public class SistemaTurnosDbContext : DbContext
 {

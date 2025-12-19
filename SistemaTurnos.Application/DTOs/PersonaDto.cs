@@ -1,4 +1,4 @@
-﻿namespace SistemaTurnos.Api.DTOs;
+﻿namespace SistemaTurnos.Application.DTOs;
 
 public class PersonaDto
 {

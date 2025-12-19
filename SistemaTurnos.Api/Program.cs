@@ -1,5 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using SistemaTurnos.Application.Interfaces;
+using SistemaTurnos.Application.Services;
 using SistemaTurnos.Infrastructure;
+using SistemaTurnos.Infrastructure.Persistence;
+using SistemaTurnos.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +16,10 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<SistemaTurnosDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IPersonaRepository, PersonaRepository>();
+builder.Services.AddScoped<IPersonaService, PersonaService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
