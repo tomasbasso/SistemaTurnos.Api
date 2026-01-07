@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SistemaTurnos.Infrastructure.Persistence;
 
@@ -10,9 +11,11 @@ using SistemaTurnos.Infrastructure.Persistence;
 namespace SistemaTurnos.Infrastructure.Migrations
 {
     [DbContext(typeof(SistemaTurnosDbContext))]
-    partial class SistemaTurnosDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260106145347_AddProfesionales")]
+    partial class AddProfesionales
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -96,40 +99,6 @@ namespace SistemaTurnos.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Profesionales", (string)null);
-                });
-
-            modelBuilder.Entity("SistemaTurnos.Domain.Entities.Servicio", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("Activo")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.Property<string>("Descripcion")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<int>("DuracionMinutos")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Nombre")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<decimal>("Precio")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Servicios", (string)null);
                 });
 
             modelBuilder.Entity("SistemaTurnos.Domain.Entities.Usuario", b =>

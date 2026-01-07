@@ -1,5 +1,7 @@
 ﻿using SistemaTurnos.Application.DTOs;
-using SistemaTurnos.Application.Interfaces;
+using SistemaTurnos.Application.DTOs.Common;
+using SistemaTurnos.Application.Interfaces.Repositories;
+using SistemaTurnos.Application.Interfaces.Services;
 using SistemaTurnos.Domain.Entities;
 using SistemaTurnos.Domain.Exceptions;
 
@@ -13,49 +15,107 @@ namespace SistemaTurnos.Application.Services
         {
             _repository = repository;
         }
+        public async Task<PagedResultDto<PersonaDto>> GetPagedAsync(
+            string? busqueda,
+            int page,
+            int pageSize,
+            string? sortBy,
+            string? sortDir)
+        {
+            page = page <= 0 ? 1 : page;
+            pageSize = pageSize <= 0 ? 10 : pageSize;
 
+            var (items, total) =
+                await _repository.GetPagedAsync(
+                    busqueda,
+                    page,
+                    pageSize,
+                    sortBy,
+                    sortDir);
+
+            return new PagedResultDto<PersonaDto>
+            {
+                Page = page,
+                PageSize = pageSize,
+                TotalItems = total,
+                TotalPages = (int)Math.Ceiling(total / (double)pageSize),
+                Items = items.Select(MapToDto).ToList()
+            };
+        }
+
+
+        // =========================
         // CREATE
+        // =========================
         public async Task<PersonaDto> CrearAsync(PersonaCreateDto dto)
         {
+            if (await _repository.ExisteDniAsync(dto.Dni))
+                throw new BusinessException($"El DNI {dto.Dni} ya existe");
+
             var persona = new Persona(dto.Nombre, dto.Dni, dto.Email);
+
             await _repository.AddAsync(persona);
+
             return MapToDto(persona);
         }
 
+        // =========================
         // UPDATE
-        public async Task ActualizarAsync(int id, PersonaCreateDto dto)
+        // =========================
+        public async Task ActualizarAsync(int id, PersonaUpdateDto dto)
         {
             var persona = await _repository.GetByIdAsync(id)
                 ?? throw new BusinessException("Persona no encontrada");
 
-            persona.Nombre = dto.Nombre;
-            persona.Dni = dto.Dni;
-            persona.Email = dto.Email;
+            if (dto.Nombre != null)
+                persona.Nombre = dto.Nombre;
+
+            if (dto.Dni != null &&
+            await _repository.ExisteDniAsync(dto.Dni, id))
+            {
+                throw new BusinessException($"El DNI {dto.Dni} ya existe");
+            }
+
+
+            if (dto.Email != null)
+                persona.Email = dto.Email;
 
             await _repository.SaveChangesAsync();
         }
 
+        // =========================
         // DELETE (lógico)
+        // =========================
         public async Task EliminarAsync(int id)
         {
             var persona = await _repository.GetByIdAsync(id)
                 ?? throw new BusinessException("Persona no encontrada");
 
+            if (!persona.Activo)
+                throw new BusinessException("La persona ya está desactivada");
+
             persona.Activo = false;
             await _repository.SaveChangesAsync();
         }
 
+        // =========================
         // REACTIVAR
+        // =========================
         public async Task ReactivarAsync(int id)
         {
             var persona = await _repository.GetByIdAsync(id)
                 ?? throw new BusinessException("Persona no encontrada");
 
+            if (persona.Activo)
+                throw new BusinessException("La persona ya está activa");
+
             persona.Activo = true;
             await _repository.SaveChangesAsync();
         }
 
+        // =========================
         // GET BY ID
+        // =========================
         public async Task<PersonaDto?> GetByIdAsync(int id)
         {
             var persona = await _repository.GetByIdAsync(id);
@@ -65,7 +125,9 @@ namespace SistemaTurnos.Application.Services
                 : MapToDto(persona);
         }
 
+        // =========================
         // GET ALL / SEARCH
+        // =========================
         public async Task<List<PersonaDto>> GetAllAsync(string? busqueda)
         {
             var personas = await _repository.GetAllAsync(busqueda);

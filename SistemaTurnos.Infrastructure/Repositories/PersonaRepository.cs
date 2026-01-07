@@ -1,69 +1,85 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SistemaTurnos.Application.Interfaces;
+using SistemaTurnos.Application.Interfaces.Repositories;
 using SistemaTurnos.Domain.Entities;
-using SistemaTurnos.Domain.Exceptions;
 using SistemaTurnos.Infrastructure.Persistence;
 
-namespace SistemaTurnos.Infrastructure.Repositories
+public class PersonaRepository : IPersonaRepository
 {
-    public class PersonaRepository : IPersonaRepository
+    private readonly SistemaTurnosDbContext _context;
+
+    public PersonaRepository(SistemaTurnosDbContext context)
     {
-        private readonly SistemaTurnosDbContext _context;
+        _context = context;
+    }
 
-        public PersonaRepository(SistemaTurnosDbContext context)
+    public async Task<(List<Persona>, int)> GetPagedAsync(
+        string? busqueda,
+        int page,
+        int pageSize,
+        string? sortBy,
+        string? sortDir)
+    {
+        IQueryable<Persona> query = _context.Personas
+            .Where(p => p.Activo);
+
+        if (!string.IsNullOrWhiteSpace(busqueda))
         {
-            _context = context;
+            query = query.Where(p =>
+                p.Nombre.Contains(busqueda) ||
+                p.Dni.Contains(busqueda));
         }
 
-        public async Task<bool> ExisteDniAsync(string dni, int? excluirId = null)
+        var total = await query.CountAsync();
+
+        query = sortBy?.ToLower() switch
         {
-            return await _context.Personas.AnyAsync(p =>
-                p.Dni == dni && (!excluirId.HasValue || p.Id != excluirId));
-        }
+            "dni" => sortDir == "desc"
+                ? query.OrderByDescending(p => p.Dni)
+                : query.OrderBy(p => p.Dni),
 
-        public async Task AddAsync(Persona persona)
-        {
-            _context.Personas.Add(persona);
+            _ => sortDir == "desc"
+                ? query.OrderByDescending(p => p.Nombre)
+                : query.OrderBy(p => p.Nombre)
+        };
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException ex) when (EsDniDuplicado(ex))
-            {
-                throw new BusinessException($"El DNI {persona.Dni} ya existe");
-            }
-        }
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
 
-        public async Task<Persona?> GetByIdAsync(int id)
-        {
-            return await _context.Personas.FindAsync(id);
-        }
+        return (items, total);
+    }
 
-        public async Task<List<Persona>> GetAllAsync(string? busqueda)
-        {
-            var query = _context.Personas
-                .Where(p => p.Activo)
-                .AsQueryable();
+    public async Task AddAsync(Persona persona)
+    {
+        await _context.Personas.AddAsync(persona);
+    }
 
-            if (!string.IsNullOrWhiteSpace(busqueda))
-            {
-                query = query.Where(p =>
-                    p.Nombre.Contains(busqueda) ||
-                    p.Dni.Contains(busqueda));
-            }
+    public async Task<Persona?> GetByIdAsync(int id)
+    {
+        return await _context.Personas.FindAsync(id);
+    }
 
-            return await query.ToListAsync();
-        }
+    public async Task<List<Persona>> GetAllAsync(string? busqueda)
+    {
+        var query = _context.Personas.Where(p => p.Activo);
 
-        public Task SaveChangesAsync()
-            => _context.SaveChangesAsync();
+        if (!string.IsNullOrWhiteSpace(busqueda))
+            query = query.Where(p => p.Nombre.Contains(busqueda));
 
-        // =========================
-        // Helpers privados
-        // =========================
-        private static bool EsDniDuplicado(DbUpdateException ex)
-            => ex.InnerException?.Message.Contains("IX_Personas_Dni") == true
-            || ex.InnerException?.Message.Contains("UX_Personas_Dni") == true;
+        return await query.ToListAsync();
+    }
+
+    public async Task<bool> ExisteDniAsync(string dni, int? id = null)
+    {
+        return await _context.Personas.AnyAsync(p =>
+            p.Dni == dni &&
+            (id == null || p.Id != id));
+    }
+
+
+    public async Task SaveChangesAsync()
+    {
+        await _context.SaveChangesAsync();
     }
 }

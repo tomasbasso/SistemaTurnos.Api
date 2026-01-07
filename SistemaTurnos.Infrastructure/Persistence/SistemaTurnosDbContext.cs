@@ -11,10 +11,48 @@ public class SistemaTurnosDbContext : DbContext
     }
     public DbSet<Persona> Personas => Set<Persona>();
     public DbSet<Cliente> Clientes => Set<Cliente>();
+    public DbSet<Profesional> Profesionales { get; set; }
+    public DbSet<Turno> Turnos { get; set; }
+    public DbSet<Servicio> Servicios => Set<Servicio>();
     public DbSet<Usuario> Usuarios => Set<Usuario>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<Servicio>(entity =>
+        {
+            entity.ToTable("Servicios");
+
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Nombre)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(e => e.DuracionMinutos)
+                .IsRequired();
+
+            entity.Property(e => e.Activo)
+                .HasDefaultValue(true);
+        });
+        modelBuilder.Entity<Turno>(entity =>
+        {
+            entity.HasKey(t => t.Id);
+
+            entity.Property(t => t.Estado)
+                  .HasConversion<int>();
+
+            entity.HasOne<Persona>()
+                  .WithMany()
+                  .HasForeignKey(t => t.PersonaId);
+
+            entity.HasOne<Profesional>()
+                  .WithMany()
+                  .HasForeignKey(t => t.ProfesionalId);
+
+            entity.HasOne<Servicio>()
+                  .WithMany()
+                  .HasForeignKey(t => t.ServicioId);
+        });
 
         modelBuilder.Entity<Persona>(entity =>
         {
@@ -76,7 +114,49 @@ public class SistemaTurnosDbContext : DbContext
                 .HasForeignKey(u => u.PersonaId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
+        modelBuilder.Entity<Profesional>(entity =>
+        {
+            entity.ToTable("Profesionales");
 
+            entity.HasKey(p => p.Id);
+
+            entity.Property(p => p.Nombre)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(p => p.Matricula)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.HasIndex(p => p.Matricula)
+                .IsUnique();
+
+            entity.Property(p => p.Activo)
+                .HasDefaultValue(true);
+        });
+        modelBuilder.Entity<Servicio>(entity =>
+        {
+            entity.ToTable("Servicios");
+
+            entity.HasKey(s => s.Id);
+
+            entity.Property(s => s.Nombre)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(s => s.Descripcion)
+                .HasMaxLength(500);
+
+            entity.Property(s => s.DuracionMinutos)
+                .IsRequired();
+
+            entity.Property(s => s.Precio)
+                .IsRequired()
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(s => s.Activo)
+                .HasDefaultValue(true);
+        });
 
     }
 

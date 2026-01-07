@@ -1,0 +1,18 @@
+﻿public interface ITurnoRepository
+{
+    Task AddAsync(Turno turno);
+    Task UpdateAsync(Turno turno);
+    Task<Turno?> GetByIdAsync(int id);
+
+    Task<bool> ExisteSolapamiento(
+        int profesionalId,
+        DateTime inicio,
+        DateTime fin
+    );
+
+    Task<IEnumerable<Turno>> GetAgendaProfesional(
+        int profesionalId,
+        DateTime desde,
+        DateTime hasta
+    );
+}
