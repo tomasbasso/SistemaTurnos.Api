@@ -1,6 +1,6 @@
-﻿using System.Net;
-using System.Text.Json;
+﻿using SistemaTurnos.Application.Exceptions;
 using SistemaTurnos.Domain.Exceptions;
+using System.Text.Json;
 
 namespace SistemaTurnos.Api.Middleware
 {
@@ -9,7 +9,9 @@ namespace SistemaTurnos.Api.Middleware
         private readonly RequestDelegate _next;
         private readonly ILogger<ExceptionMiddleware> _logger;
 
-        public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
+        public ExceptionMiddleware(
+            RequestDelegate next,
+            ILogger<ExceptionMiddleware> logger)
         {
             _next = next;
             _logger = logger;
@@ -23,13 +25,43 @@ namespace SistemaTurnos.Api.Middleware
             }
             catch (BusinessException ex)
             {
-                context.Response.StatusCode = StatusCodes.Status409Conflict;
+                var statusCode = ex.Message.Contains("pasado") 
+                    ? StatusCodes.Status409Conflict 
+                    : StatusCodes.Status400BadRequest;
+
+                context.Response.StatusCode = statusCode;
                 context.Response.ContentType = "application/json";
 
-                await context.Response.WriteAsync(JsonSerializer.Serialize(new
-                {
-                    error = ex.Message
-                }));
+                await context.Response.WriteAsync(
+                    JsonSerializer.Serialize(new
+                    {
+                        error = ex.Message
+                    })
+                );
+            }
+            catch (InvalidOperationException ex)
+            {
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                context.Response.ContentType = "application/json";
+
+                await context.Response.WriteAsync(
+                    JsonSerializer.Serialize(new
+                    {
+                        error = ex.Message
+                    })
+                );
+            }
+            catch (NotFoundException ex)
+            {
+                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                context.Response.ContentType = "application/json";
+
+                await context.Response.WriteAsync(
+                    JsonSerializer.Serialize(new
+                    {
+                        error = ex.Message
+                    })
+                );
             }
             catch (Exception ex)
             {
@@ -38,10 +70,12 @@ namespace SistemaTurnos.Api.Middleware
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 context.Response.ContentType = "application/json";
 
-                await context.Response.WriteAsync(JsonSerializer.Serialize(new
-                {
-                    error = "Ocurrió un error inesperado"
-                }));
+                await context.Response.WriteAsync(
+                    JsonSerializer.Serialize(new
+                    {
+                        error = "Error interno del servidor"
+                    })
+                );
             }
         }
     }

@@ -94,12 +94,11 @@ public class TurnoService
             hasta
         );
 
-        return turnos.Select(t => new TurnoDto
-        {
-            Id = t.Id,
-            FechaHoraInicio = t.FechaHoraInicio,
-            FechaHoraFin = t.FechaHoraFin,
-            Estado = t.Estado
-        });
+        return turnos.Select(t => t.ToDto());
+    }
+    public async Task<Turno> GetByIdAsync(int id)
+    {
+        return await _turnos.GetByIdAsync(id)
+            ?? throw new NotFoundException("Turno no encontrado");
     }
 }

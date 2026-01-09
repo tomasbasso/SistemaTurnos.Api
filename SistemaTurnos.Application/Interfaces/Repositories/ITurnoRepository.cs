@@ -1,4 +1,6 @@
-﻿public interface ITurnoRepository
+﻿using SistemaTurnos.Domain.Entities;
+
+public interface ITurnoRepository
 {
     Task AddAsync(Turno turno);
     Task UpdateAsync(Turno turno);
@@ -15,4 +17,6 @@
         DateTime desde,
         DateTime hasta
     );
+
+    Task<IEnumerable<Turno>> GetByFecha(DateTime fecha);
 }

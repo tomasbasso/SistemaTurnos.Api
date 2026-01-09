@@ -13,6 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SistemaTurnos.Application",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SistemaTurnos.Domain.Tests", "SistemaTurnos.Domain.Tests\SistemaTurnos.Domain.Tests.csproj", "{8546DDB5-D796-4A5E-A87E-DF7458B36133}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SistemaTurnos.Application.Tests", "SistemaTurnos.Application.Tests\SistemaTurnos.Application.Tests.csproj", "{C7742530-06C4-41D5-9621-719DBDFE2EE4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SistemaTurnos.Api.Tests", "SistemaTurnos.Api.Tests\SistemaTurnos.Api.Tests.csproj", "{7D80C626-5E2E-475E-9170-22A42300EA57}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +43,14 @@ Global
 		{8546DDB5-D796-4A5E-A87E-DF7458B36133}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8546DDB5-D796-4A5E-A87E-DF7458B36133}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8546DDB5-D796-4A5E-A87E-DF7458B36133}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7742530-06C4-41D5-9621-719DBDFE2EE4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7742530-06C4-41D5-9621-719DBDFE2EE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7742530-06C4-41D5-9621-719DBDFE2EE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7742530-06C4-41D5-9621-719DBDFE2EE4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D80C626-5E2E-475E-9170-22A42300EA57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D80C626-5E2E-475E-9170-22A42300EA57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D80C626-5E2E-475E-9170-22A42300EA57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D80C626-5E2E-475E-9170-22A42300EA57}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

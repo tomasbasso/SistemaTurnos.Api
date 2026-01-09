@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+
+		<IsPackable>false</IsPackable>
+		<IsTestProject>true</IsTestProject>
+
+		<!-- NECESARIO para WebApplicationFactory -->
+		<PreserveCompilationContext>true</PreserveCompilationContext>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- TEST FRAMEWORK -->
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
+		<PackageReference Include="xunit" Version="2.5.3" />
+		<PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
+
+		<!-- ASP.NET CORE TESTING -->
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.8" />
+
+		<!-- EF IN MEMORY -->
+		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.8" />
+
+		<!-- ASSERTS -->
+		<PackageReference Include="FluentAssertions" Version="8.8.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<!-- REFERENCIA A LA API -->
+		<ProjectReference Include="..\SistemaTurnos.Api\SistemaTurnos.Api.csproj" />
+	</ItemGroup>
+
+	<Target Name="CopyDepsFile" AfterTargets="Build">
+		<Copy SourceFiles="..\SistemaTurnos.Api\bin\$(Configuration)\net8.0\SistemaTurnos.Api.deps.json" DestinationFiles="bin\$(Configuration)\net8.0\testhost.deps.json" />
+	</Target>
+
+</Project>

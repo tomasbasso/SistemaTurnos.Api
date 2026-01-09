@@ -1,7 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SistemaTurnos.Application.Interfaces.Repositories;
 using SistemaTurnos.Domain.Entities;
 using SistemaTurnos.Domain.Enums;
 using SistemaTurnos.Infrastructure.Persistence;
+using System;
 
 public class TurnoRepository : ITurnoRepository
 {
@@ -26,8 +28,7 @@ public class TurnoRepository : ITurnoRepository
 
     public async Task<Turno?> GetByIdAsync(int id)
     {
-        return await _context.Turnos
-            .FirstOrDefaultAsync(t => t.Id == id);
+        return await _context.Turnos.FindAsync(id);
     }
 
     public async Task<bool> ExisteSolapamiento(
@@ -54,6 +55,18 @@ public class TurnoRepository : ITurnoRepository
                 t.FechaHoraInicio >= desde &&
                 t.FechaHoraInicio <= hasta)
             .OrderBy(t => t.FechaHoraInicio)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Turno>> GetByFecha(DateTime fecha)
+    {
+        var desde = fecha.Date;
+        var hasta = desde.AddDays(1);
+
+        return await _context.Turnos
+            .Where(t =>
+                t.FechaHoraInicio >= desde &&
+                t.FechaHoraInicio < hasta)
             .ToListAsync();
     }
 }

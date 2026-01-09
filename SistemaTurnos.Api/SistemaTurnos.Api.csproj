@@ -4,6 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+	  <PreserveCompilationContext>true</PreserveCompilationContext>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,6 +21,10 @@
     <ProjectReference Include="..\SistemaTurnos.Application\SistemaTurnos.Application.csproj" />
     <ProjectReference Include="..\SistemaTurnos.Domain\SistemaTurnos.Domain.csproj" />
     <ProjectReference Include="..\SistemaTurnos.Infrastructure\SistemaTurnos.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="SistemaTurnos.Api.Tests" />
   </ItemGroup>
 
 </Project>
