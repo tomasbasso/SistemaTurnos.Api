@@ -209,4 +209,60 @@ public class TurnoServiceTests
             service.FinalizarAsync(1)
         );
     }
+
+    // --------------------
+    // AGENDA PROFESIONAL
+    // --------------------
+
+    [Fact]
+    public async Task ObtenerAgendaProfesional_ProfesionalInexistente_LanzaBusinessException()
+    {
+        var service = CrearService();
+
+        _profesionales.Setup(p => p.GetByIdAsync(1))
+            .ReturnsAsync((Profesional?)null);
+
+        await Assert.ThrowsAsync<BusinessException>(() =>
+            service.ObtenerAgendaProfesionalAsync(1, DateTime.Now, DateTime.Now.AddDays(1))
+        );
+    }
+
+    [Fact]
+    public async Task ObtenerAgendaProfesional_RangoInvalido_LanzaBusinessException()
+    {
+        var service = CrearService();
+
+        await Assert.ThrowsAsync<BusinessException>(() =>
+            service.ObtenerAgendaProfesionalAsync(1, DateTime.Now.AddDays(1), DateTime.Now)
+        );
+    }
+
+    [Fact]
+    public async Task ObtenerAgendaProfesional_Valido_RetornaAgenda()
+    {
+        var service = CrearService();
+
+        var profesional = new Profesional("Dr", "House") { Activo = true };
+        _profesionales.Setup(p => p.GetByIdAsync(1))
+            .ReturnsAsync(profesional);
+
+        var turnos = new List<Turno>
+        {
+            new Turno(1, 1, 1, DateTime.Now.AddHours(1), 30),
+            new Turno(2, 1, 1, DateTime.Now.AddHours(2), 30)
+        };
+
+        turnos[0].Persona = new Persona("Juan", "Perez", "juan@test.com");
+        turnos[0].Servicio = new Servicio("Consulta", "General", 30, 5000);
+        turnos[1].Persona = new Persona("Ana", "Gomez", "ana@test.com");
+        turnos[1].Servicio = new Servicio("Consulta", "General", 30, 5000);
+
+        _turnos.Setup(t => t.GetAgendaProfesional(1, It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+            .ReturnsAsync(turnos);
+
+        var result = await service.ObtenerAgendaProfesionalAsync(1, DateTime.Now, DateTime.Now.AddDays(1));
+
+        Assert.Equal(2, result.Count());
+        Assert.Equal("Juan", result.First().PersonaNombre);
+    }
 }

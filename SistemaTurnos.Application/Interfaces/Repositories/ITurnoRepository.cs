@@ -12,10 +12,10 @@ public interface ITurnoRepository
         DateTime fin
     );
 
-    Task<IEnumerable<Turno>> GetAgendaProfesional(
+    Task<IEnumerable<Turno>> GetAgendaProfesionalAsync(
         int profesionalId,
-        DateTime desde,
-        DateTime hasta
+        DateTime? desde,
+        DateTime? hasta
     );
 
     Task<IEnumerable<Turno>> GetByFecha(DateTime fecha);

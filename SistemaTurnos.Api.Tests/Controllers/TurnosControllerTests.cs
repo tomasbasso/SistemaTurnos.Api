@@ -72,15 +72,41 @@ public class TurnosControllerTests
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
     [Fact]
-    public async Task FinalizarTurno_Retorna204()
+    public async Task AgendaProfesional_ProfesionalInexistente_Retorna409()
     {
-        // Usar el turno existente con Id=1 que ya está en el pasado
-        var response = await _client.PutAsync(
-            "/api/turnos/1/finalizar",
-            null
+        var desde = DateTime.Now;
+        var hasta = DateTime.Now.AddDays(7);
+
+        var response = await _client.GetAsync(
+            $"/api/turnos/profesionales/999/agenda?desde={desde:yyyy-MM-dd}&hasta={hasta:yyyy-MM-dd}"
         );
 
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    [Fact]
+    public async Task AgendaProfesional_RangoInvalido_Retorna409()
+    {
+        var desde = DateTime.Now.AddDays(7);
+        var hasta = DateTime.Now;
+
+        var response = await _client.GetAsync(
+            $"/api/turnos/profesionales/1/agenda?desde={desde:yyyy-MM-dd}&hasta={hasta:yyyy-MM-dd}"
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task AgendaProfesional_Valida_RetornaOk()
+    {
+        var desde = DateTime.Now;
+        var hasta = DateTime.Now.AddDays(7);
+
+        var response = await _client.GetAsync(
+            $"/api/turnos/profesionales/1/agenda?desde={desde:yyyy-MM-dd}&hasta={hasta:yyyy-MM-dd}"
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
 }

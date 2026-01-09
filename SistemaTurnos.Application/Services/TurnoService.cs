@@ -1,6 +1,5 @@
 ﻿using SistemaTurnos.Application.Interfaces.Repositories;
 using SistemaTurnos.Domain.Exceptions;
-using SistemaTurnos.Application.DTOs;
 using SistemaTurnos.Application.Exceptions;
 
 public class TurnoService
@@ -83,18 +82,33 @@ public class TurnoService
         turno.Cancelar();
         await _turnos.UpdateAsync(turno);
     }
-    public async Task<IEnumerable<TurnoDto>> GetAgendaProfesional(
-    int profesionalId,
-    DateTime desde,
-    DateTime hasta)
+    public async Task<IEnumerable<AgendaTurnoDto>> ObtenerAgendaProfesionalAsync(
+      int profesionalId,
+      DateTime? desde,
+      DateTime? hasta)
     {
-        var turnos = await _turnos.GetAgendaProfesional(
+        if (desde.HasValue && hasta.HasValue && desde > hasta)
+            throw new BusinessException("El rango de fechas es inválido");
+
+        var profesional = await _profesionales.GetByIdAsync(profesionalId);
+        if (profesional == null || !profesional.Activo)
+            throw new BusinessException("Profesional inválido");
+
+        var turnos = await _turnos.GetAgendaProfesionalAsync(
             profesionalId,
             desde,
             hasta
         );
 
-        return turnos.Select(t => t.ToDto());
+        return turnos.Select(t => new AgendaTurnoDto
+        {
+            TurnoId = t.Id,
+            FechaHoraInicio = t.FechaHoraInicio,
+            FechaHoraFin = t.FechaHoraFin,
+            Estado = t.Estado.ToString(),
+            PersonaNombre = t.Persona?.Nombre ?? "Desconocido",
+            ServicioNombre = t.Servicio?.Nombre ?? "Desconocido"
+        });
     }
     public async Task<Turno> GetByIdAsync(int id)
     {

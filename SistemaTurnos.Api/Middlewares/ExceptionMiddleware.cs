@@ -70,12 +70,12 @@ namespace SistemaTurnos.Api.Middleware
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 context.Response.ContentType = "application/json";
 
-                await context.Response.WriteAsync(
-                    JsonSerializer.Serialize(new
-                    {
-                        error = "Error interno del servidor"
-                    })
-                );
+                await context.Response.WriteAsync(JsonSerializer.Serialize(new
+                {
+                    error = ex.Message,
+                    innerError = ex.InnerException?.Message,
+                    stack = ex.StackTrace
+                }));
             }
         }
     }

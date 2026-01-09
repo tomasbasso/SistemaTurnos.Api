@@ -1,4 +1,5 @@
-﻿using SistemaTurnos.Domain.Enums;
+﻿using SistemaTurnos.Domain.Entities;
+using SistemaTurnos.Domain.Enums;
 
 public class Turno
 {
@@ -13,6 +14,10 @@ public class Turno
 
     public EstadoTurno Estado { get; private set; }
     public DateTime FechaCreacion { get; private set; }
+
+    // Navegación
+    public Persona Persona { get; set; } = null!;
+    public Servicio Servicio { get; set; } = null!;
 
     protected Turno() { }
 

@@ -62,18 +62,18 @@ public class TurnosController : ControllerBase
     // --------------------
     // AGENDA PROFESIONAL
     // --------------------
-    [HttpGet("profesional/{profesionalId}")]
-    public async Task<IActionResult> Agenda(
-        int profesionalId,
-        [FromQuery] DateTime desde,
-        [FromQuery] DateTime hasta)
+    [HttpGet("profesionales/{profesionalId}/agenda")]
+    public async Task<IActionResult> AgendaProfesional(
+    int profesionalId,
+    DateTime? desde,
+    DateTime? hasta)
     {
-        var turnos = await _service.GetAgendaProfesional(
+        var agenda = await _service.ObtenerAgendaProfesionalAsync(
             profesionalId,
             desde,
             hasta
         );
 
-        return Ok(turnos);
+        return Ok(agenda);
     }
 }

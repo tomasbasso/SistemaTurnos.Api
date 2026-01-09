@@ -41,17 +41,17 @@ public class SistemaTurnosDbContext : DbContext
             entity.Property(t => t.Estado)
                   .HasConversion<int>();
 
-            entity.HasOne<Persona>()
+            entity.HasOne(t => t.Persona)
                   .WithMany()
                   .HasForeignKey(t => t.PersonaId);
+
+            entity.HasOne(t => t.Servicio)
+                  .WithMany()
+                  .HasForeignKey(t => t.ServicioId);
 
             entity.HasOne<Profesional>()
                   .WithMany()
                   .HasForeignKey(t => t.ProfesionalId);
-
-            entity.HasOne<Servicio>()
-                  .WithMany()
-                  .HasForeignKey(t => t.ServicioId);
         });
 
         modelBuilder.Entity<Persona>(entity =>

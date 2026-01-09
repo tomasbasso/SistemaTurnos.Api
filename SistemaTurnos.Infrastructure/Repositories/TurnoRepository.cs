@@ -44,16 +44,26 @@ public class TurnoRepository : ITurnoRepository
         );
     }
 
-    public async Task<IEnumerable<Turno>> GetAgendaProfesional(
-        int profesionalId,
-        DateTime desde,
-        DateTime hasta)
+    public async Task<IEnumerable<Turno>> GetAgendaProfesionalAsync(
+      int profesionalId,
+      DateTime? desde,
+      DateTime? hasta)
     {
-        return await _context.Turnos
+        var query = _context.Turnos
             .Where(t =>
                 t.ProfesionalId == profesionalId &&
-                t.FechaHoraInicio >= desde &&
-                t.FechaHoraInicio <= hasta)
+                t.Estado != EstadoTurno.Cancelado
+            );
+
+        if (desde.HasValue)
+            query = query.Where(t => t.FechaHoraInicio >= desde.Value);
+
+        if (hasta.HasValue)
+            query = query.Where(t => t.FechaHoraInicio <= hasta.Value);
+
+        return await query
+            .Include(t => t.Persona)
+            .Include(t => t.Servicio)
             .OrderBy(t => t.FechaHoraInicio)
             .ToListAsync();
     }
