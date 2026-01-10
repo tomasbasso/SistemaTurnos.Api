@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace SistemaTurnos.Application.DTOs
 {
     public class ProfesionalCreateDto
     {
-        public string Nombre { get; set; }
+        [Required]
+        public int PersonaId { get; set; }
+
+        [Required]
         public string Matricula { get; set; }
     }
 }
+

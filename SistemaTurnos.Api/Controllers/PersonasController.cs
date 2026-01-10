@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SistemaTurnos.Application.DTOs;
 using SistemaTurnos.Application.DTOs.Common;
 using SistemaTurnos.Application.Interfaces.Services;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = "Administrador")]
 public class PersonasController : ControllerBase
 {
     private readonly IPersonaService _personaService;

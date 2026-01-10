@@ -1,7 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SistemaTurnos.Application.Interfaces;
+using SistemaTurnos.Application.Interfaces.Repositories;
 using SistemaTurnos.Domain.Entities;
 using SistemaTurnos.Infrastructure.Persistence;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 public class ProfesionalRepository : IProfesionalRepository
 {
@@ -19,6 +22,11 @@ public class ProfesionalRepository : IProfesionalRepository
             (!excluirId.HasValue || p.Id != excluirId));
     }
 
+    public async Task<bool> ExisteAsignacion(int personaId)
+    {
+        return await _context.Profesionales.AnyAsync(p => p.PersonaId == personaId);
+    }
+
     public async Task AddAsync(Profesional profesional)
     {
         _context.Profesionales.Add(profesional);
@@ -27,7 +35,10 @@ public class ProfesionalRepository : IProfesionalRepository
 
     public async Task<Profesional?> GetByIdAsync(int id)
     {
-        return await _context.Profesionales.FindAsync(id);
+        return await _context.Profesionales
+            .Include(p => p.Persona)
+            .Include(p => p.Servicios)
+            .FirstOrDefaultAsync(p => p.Id == id);
     }
 
     public async Task<(List<Profesional> Items, int Total)> GetPagedAsync(
@@ -38,6 +49,7 @@ public class ProfesionalRepository : IProfesionalRepository
         string? sortDir)
     {
         var query = _context.Profesionales
+            .Include(p => p.Persona)
             .Where(p => p.Activo)
             .AsQueryable();
 
@@ -45,7 +57,7 @@ public class ProfesionalRepository : IProfesionalRepository
         if (!string.IsNullOrWhiteSpace(busqueda))
         {
             query = query.Where(p =>
-                p.Nombre.Contains(busqueda) ||
+                p.Persona.Nombre.Contains(busqueda) ||
                 p.Matricula.Contains(busqueda));
         }
 
@@ -53,14 +65,14 @@ public class ProfesionalRepository : IProfesionalRepository
         query = sortBy?.ToLower() switch
         {
             "nombre" => sortDir == "desc"
-                ? query.OrderByDescending(p => p.Nombre)
-                : query.OrderBy(p => p.Nombre),
+                ? query.OrderByDescending(p => p.Persona.Nombre)
+                : query.OrderBy(p => p.Persona.Nombre),
 
             "matricula" => sortDir == "desc"
                 ? query.OrderByDescending(p => p.Matricula)
                 : query.OrderBy(p => p.Matricula),
 
-            _ => query.OrderBy(p => p.Nombre)
+            _ => query.OrderBy(p => p.Persona.Nombre)
         };
 
         var total = await query.CountAsync();

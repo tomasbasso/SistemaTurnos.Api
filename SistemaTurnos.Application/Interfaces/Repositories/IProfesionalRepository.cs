@@ -3,6 +3,7 @@
 public interface IProfesionalRepository
 {
     Task<bool> ExisteMatriculaAsync(string matricula, int? excluirId = null);
+    Task<bool> ExisteAsignacion(int personaId);
 
     Task AddAsync(Profesional profesional);
     Task<Profesional?> GetByIdAsync(int id);

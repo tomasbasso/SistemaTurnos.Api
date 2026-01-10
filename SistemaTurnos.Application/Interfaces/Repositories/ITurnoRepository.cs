@@ -18,5 +18,8 @@ public interface ITurnoRepository
         DateTime? hasta
     );
 
+    Task<IEnumerable<Turno>> GetByPersonaIdAsync(int personaId);
+    Task<IEnumerable<Turno>> GetAllAsync();
+
     Task<IEnumerable<Turno>> GetByFecha(DateTime fecha);
 }

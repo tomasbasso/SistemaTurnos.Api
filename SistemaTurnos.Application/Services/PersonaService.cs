@@ -1,4 +1,5 @@
-﻿using SistemaTurnos.Application.DTOs;
+﻿using static BCrypt.Net.BCrypt;
+using SistemaTurnos.Application.DTOs;
 using SistemaTurnos.Application.DTOs.Common;
 using SistemaTurnos.Application.Interfaces.Repositories;
 using SistemaTurnos.Application.Interfaces.Services;
@@ -52,9 +53,14 @@ namespace SistemaTurnos.Application.Services
             if (await _repository.ExisteDniAsync(dto.Dni))
                 throw new BusinessException($"El DNI {dto.Dni} ya existe");
 
-            var persona = new Persona(dto.Nombre, dto.Dni, dto.Email);
+            if (await _repository.GetByEmailAsync(dto.Email) != null)
+                throw new BusinessException($"El email {dto.Email} ya existe");
+
+            var passwordHash = HashPassword(dto.Password);
+            var persona = new Persona(dto.Nombre, dto.Dni, dto.Email, passwordHash, dto.Rol);
 
             await _repository.AddAsync(persona);
+            await _repository.SaveChangesAsync();
 
             return MapToDto(persona);
         }
@@ -79,6 +85,9 @@ namespace SistemaTurnos.Application.Services
 
             if (dto.Email != null)
                 persona.Email = dto.Email;
+
+            if (dto.Rol.HasValue)
+                persona.Rol = dto.Rol.Value;
 
             await _repository.SaveChangesAsync();
         }
@@ -135,6 +144,26 @@ namespace SistemaTurnos.Application.Services
         }
 
         // =========================
+        // GET BY EMAIL
+        // =========================
+        public async Task<PersonaDto?> GetByEmailAsync(string email)
+        {
+            var persona = await _repository.GetByEmailAsync(email);
+
+            return persona == null || !persona.Activo
+                ? null
+                : MapToDto(persona);
+        }
+
+        // =========================
+        // GET PERSONA BY EMAIL (ENTITY)
+        // =========================
+        public async Task<Persona?> GetPersonaByEmailAsync(string email)
+        {
+            return await _repository.GetByEmailAsync(email);
+        }
+
+        // =========================
         // Mapping
         // =========================
         private static PersonaDto MapToDto(Persona p) => new()
@@ -142,7 +171,8 @@ namespace SistemaTurnos.Application.Services
             Id = p.Id,
             Nombre = p.Nombre,
             Dni = p.Dni,
-            Email = p.Email
+            Email = p.Email,
+            Rol = p.Rol
         };
     }
 }

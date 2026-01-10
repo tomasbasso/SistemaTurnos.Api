@@ -2,10 +2,13 @@
 using SistemaTurnos.Application.DTOs;
 using SistemaTurnos.Application.Exceptions;
 using SistemaTurnos.Application.Interfaces.Repositories;
-using SistemaTurnos.Application.Services;
 using SistemaTurnos.Domain.Entities;
 using SistemaTurnos.Domain.Enums;
 using SistemaTurnos.Domain.Exceptions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 public class TurnoServiceTests
@@ -14,6 +17,8 @@ public class TurnoServiceTests
     private readonly Mock<IPersonaRepository> _personas = new();
     private readonly Mock<IProfesionalRepository> _profesionales = new();
     private readonly Mock<IServicioRepository> _servicios = new();
+    private readonly Mock<IHorarioTrabajoRepository> _horarios = new();
+    private readonly Mock<IBloqueoTiempoRepository> _bloqueos = new();
 
     private TurnoService CrearService()
     {
@@ -21,7 +26,9 @@ public class TurnoServiceTests
             _turnos.Object,
             _personas.Object,
             _profesionales.Object,
-            _servicios.Object
+            _servicios.Object,
+            _horarios.Object,
+            _bloqueos.Object
         );
     }
 
@@ -29,20 +36,24 @@ public class TurnoServiceTests
     {
         return new TurnoCreateDto
         {
-            PersonaId = 1,
             ProfesionalId = 1,
             ServicioId = 1,
             FechaHoraInicio = DateTime.Now.AddHours(1)
         };
     }
 
+    private Persona CrearPersonaValida()
+    {
+        return new Persona("Juan Perez", "12345678", "juan@test.com", "hash", Rol.Cliente);
+    }
+
     private void SetupDatosValidos()
     {
         _personas.Setup(p => p.GetByIdAsync(It.IsAny<int>()))
-     .ReturnsAsync(new Persona("Juan", "Perez", "juan@test.com"));
+            .ReturnsAsync(CrearPersonaValida());
 
         _profesionales.Setup(p => p.GetByIdAsync(It.IsAny<int>()))
-            .ReturnsAsync(new Profesional("Dr", "House"));
+            .ReturnsAsync(new Profesional(1, "MAT-123"));
 
         _servicios.Setup(s => s.GetByIdAsync(It.IsAny<int>()))
             .ReturnsAsync(new Servicio("Consulta", "General", 30, 5000));
@@ -52,6 +63,11 @@ public class TurnoServiceTests
                 It.IsAny<DateTime>(),
                 It.IsAny<DateTime>()))
             .ReturnsAsync(false);
+        
+        _horarios.Setup(h => h.GetByProfesionalIdAsync(It.IsAny<int>()))
+            .ReturnsAsync(new List<HorarioTrabajo> { 
+                new HorarioTrabajo { DiaSemana = DateTime.Now.AddHours(1).DayOfWeek, HoraInicio = TimeOnly.FromDateTime(DateTime.Now), HoraFin = TimeOnly.FromDateTime(DateTime.Now.AddHours(2)) }
+            });
     }
 
     // --------------------
@@ -62,17 +78,11 @@ public class TurnoServiceTests
     public async Task Crear_TurnoEnElPasado_LanzaBusinessException()
     {
         var service = CrearService();
-
-        var dto = new TurnoCreateDto
-        {
-            PersonaId = 1,
-            ProfesionalId = 1,
-            ServicioId = 1,
-            FechaHoraInicio = DateTime.Now.AddHours(-1)
-        };
+        var dto = CrearDtoValido();
+        dto.FechaHoraInicio = DateTime.Now.AddHours(-1);
 
         await Assert.ThrowsAsync<BusinessException>(() =>
-            service.CrearAsync(dto)
+            service.CrearAsync(dto, 1)
         );
     }
 
@@ -86,7 +96,7 @@ public class TurnoServiceTests
             .ReturnsAsync((Persona?)null);
 
         await Assert.ThrowsAsync<BusinessException>(() =>
-            service.CrearAsync(dto)
+            service.CrearAsync(dto, 1)
         );
     }
 
@@ -97,13 +107,13 @@ public class TurnoServiceTests
         var dto = CrearDtoValido();
 
         _personas.Setup(p => p.GetByIdAsync(It.IsAny<int>()))
-    .ReturnsAsync(new Persona("Juan", "Perez", "juan@test.com"));
+            .ReturnsAsync(CrearPersonaValida());
 
         _profesionales.Setup(p => p.GetByIdAsync(1))
             .ReturnsAsync((Profesional?)null);
 
         await Assert.ThrowsAsync<BusinessException>(() =>
-            service.CrearAsync(dto)
+            service.CrearAsync(dto, 1)
         );
     }
 
@@ -114,10 +124,10 @@ public class TurnoServiceTests
         var dto = CrearDtoValido();
 
         _personas.Setup(p => p.GetByIdAsync(It.IsAny<int>()))
-    .ReturnsAsync(new Persona("Juan", "Perez", "juan@test.com"));
+            .ReturnsAsync(CrearPersonaValida());
 
         _profesionales.Setup(p => p.GetByIdAsync(1))
-            .ReturnsAsync(new Profesional("Dr", "House"));
+            .ReturnsAsync(new Profesional(1, "MAT-123"));
 
         var servicio = new Servicio("Consulta", "General", 30, 5000);
         servicio.Activo = false;
@@ -126,7 +136,7 @@ public class TurnoServiceTests
             .ReturnsAsync(servicio);
 
         await Assert.ThrowsAsync<BusinessException>(() =>
-            service.CrearAsync(dto)
+            service.CrearAsync(dto, 1)
         );
     }
 
@@ -145,7 +155,7 @@ public class TurnoServiceTests
             .ReturnsAsync(true);
 
         await Assert.ThrowsAsync<BusinessException>(() =>
-            service.CrearAsync(dto)
+            service.CrearAsync(dto, 1)
         );
     }
 
@@ -157,7 +167,7 @@ public class TurnoServiceTests
 
         SetupDatosValidos();
 
-        var turno = await service.CrearAsync(dto);
+        var turno = await service.CrearAsync(dto, 1);
 
         Assert.NotNull(turno);
         Assert.Equal(EstadoTurno.Activo, turno.Estado);
@@ -242,7 +252,7 @@ public class TurnoServiceTests
     {
         var service = CrearService();
 
-        var profesional = new Profesional("Dr", "House") { Activo = true };
+        var profesional = new Profesional(1, "MAT-123") { Activo = true };
         _profesionales.Setup(p => p.GetByIdAsync(1))
             .ReturnsAsync(profesional);
 
@@ -252,17 +262,17 @@ public class TurnoServiceTests
             new Turno(2, 1, 1, DateTime.Now.AddHours(2), 30)
         };
 
-        turnos[0].Persona = new Persona("Juan", "Perez", "juan@test.com");
+        turnos[0].Persona = new Persona("Juan Perez", "12345678", "juan@test.com", "hash", Rol.Cliente);
         turnos[0].Servicio = new Servicio("Consulta", "General", 30, 5000);
-        turnos[1].Persona = new Persona("Ana", "Gomez", "ana@test.com");
+        turnos[1].Persona = new Persona("Ana Gomez", "87654321", "ana@test.com", "hash", Rol.Cliente);
         turnos[1].Servicio = new Servicio("Consulta", "General", 30, 5000);
 
-        _turnos.Setup(t => t.GetAgendaProfesional(1, It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+        _turnos.Setup(t => t.GetAgendaProfesionalAsync(1, It.IsAny<DateTime?>(), It.IsAny<DateTime?>()))
             .ReturnsAsync(turnos);
 
         var result = await service.ObtenerAgendaProfesionalAsync(1, DateTime.Now, DateTime.Now.AddDays(1));
 
         Assert.Equal(2, result.Count());
-        Assert.Equal("Juan", result.First().PersonaNombre);
+        Assert.Equal("Juan Perez", result.First().PersonaNombre);
     }
 }

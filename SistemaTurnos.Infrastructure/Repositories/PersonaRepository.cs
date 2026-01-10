@@ -70,6 +70,11 @@ public class PersonaRepository : IPersonaRepository
         return await query.ToListAsync();
     }
 
+    public async Task<Persona?> GetByEmailAsync(string email)
+    {
+        return await _context.Personas.FirstOrDefaultAsync(p => p.Email == email);
+    }
+
     public async Task<bool> ExisteDniAsync(string dni, int? id = null)
     {
         return await _context.Personas.AnyAsync(p =>

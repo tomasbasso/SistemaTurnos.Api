@@ -1,23 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace SistemaTurnos.Domain.Entities
 {
     public class Profesional
     {
-        public int Id { get; private set; }
-        public string Nombre { get; set; }
+        public int Id { get; set; }
         public string Matricula { get; set; }
         public bool Activo { get; set; } = true;
 
-        protected Profesional() { }
+        public int PersonaId { get; set; }
+        public Persona Persona { get; set; } = null!;
 
-        public Profesional(string nombre, string matricula)
+        public ICollection<HorarioTrabajo> HorariosTrabajo { get; set; } = new List<HorarioTrabajo>();
+        public ICollection<BloqueoTiempo> BloqueosTiempo { get; set; } = new List<BloqueoTiempo>();
+        public ICollection<Servicio> Servicios { get; set; } = new List<Servicio>();
+
+        public Profesional() { }
+
+        public Profesional(int personaId, string matricula)
         {
-            Nombre = nombre;
+            PersonaId = personaId;
             Matricula = matricula;
         }
     }

@@ -12,8 +12,8 @@ using SistemaTurnos.Infrastructure.Persistence;
 namespace SistemaTurnos.Infrastructure.Migrations
 {
     [DbContext(typeof(SistemaTurnosDbContext))]
-    [Migration("20260109173645_AddTurnosTable")]
-    partial class AddTurnosTable
+    [Migration("20260110152446_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,16 +24,6 @@ namespace SistemaTurnos.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("SistemaTurnos.Domain.Entities.Cliente", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Clientes", (string)null);
-                });
 
             modelBuilder.Entity("SistemaTurnos.Domain.Entities.Persona", b =>
                 {
@@ -62,6 +52,13 @@ namespace SistemaTurnos.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Rol")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -136,42 +133,6 @@ namespace SistemaTurnos.Infrastructure.Migrations
                     b.ToTable("Servicios", (string)null);
                 });
 
-            modelBuilder.Entity("SistemaTurnos.Domain.Entities.Usuario", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("Activo")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<int>("PersonaId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Rol")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PersonaId");
-
-                    b.ToTable("Usuarios", (string)null);
-                });
-
             modelBuilder.Entity("Turno", b =>
                 {
                     b.Property<int>("Id")
@@ -198,6 +159,9 @@ namespace SistemaTurnos.Infrastructure.Migrations
                     b.Property<int>("ProfesionalId")
                         .HasColumnType("int");
 
+                    b.Property<int>("ProfesionalId1")
+                        .HasColumnType("int");
+
                     b.Property<int>("ServicioId")
                         .HasColumnType("int");
 
@@ -207,31 +171,11 @@ namespace SistemaTurnos.Infrastructure.Migrations
 
                     b.HasIndex("ProfesionalId");
 
+                    b.HasIndex("ProfesionalId1");
+
                     b.HasIndex("ServicioId");
 
                     b.ToTable("Turnos");
-                });
-
-            modelBuilder.Entity("SistemaTurnos.Domain.Entities.Cliente", b =>
-                {
-                    b.HasOne("SistemaTurnos.Domain.Entities.Persona", "Persona")
-                        .WithOne()
-                        .HasForeignKey("SistemaTurnos.Domain.Entities.Cliente", "Id")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Persona");
-                });
-
-            modelBuilder.Entity("SistemaTurnos.Domain.Entities.Usuario", b =>
-                {
-                    b.HasOne("SistemaTurnos.Domain.Entities.Persona", "Persona")
-                        .WithMany()
-                        .HasForeignKey("PersonaId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Persona");
                 });
 
             modelBuilder.Entity("Turno", b =>
@@ -239,22 +183,30 @@ namespace SistemaTurnos.Infrastructure.Migrations
                     b.HasOne("SistemaTurnos.Domain.Entities.Persona", "Persona")
                         .WithMany()
                         .HasForeignKey("PersonaId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SistemaTurnos.Domain.Entities.Profesional", null)
                         .WithMany()
                         .HasForeignKey("ProfesionalId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistemaTurnos.Domain.Entities.Profesional", "Profesional")
+                        .WithMany()
+                        .HasForeignKey("ProfesionalId1")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("SistemaTurnos.Domain.Entities.Servicio", "Servicio")
                         .WithMany()
                         .HasForeignKey("ServicioId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Persona");
+
+                    b.Navigation("Profesional");
 
                     b.Navigation("Servicio");
                 });

@@ -79,4 +79,24 @@ public class TurnoRepository : ITurnoRepository
                 t.FechaHoraInicio < hasta)
             .ToListAsync();
     }
+
+    public async Task<IEnumerable<Turno>> GetByPersonaIdAsync(int personaId)
+    {
+        return await _context.Turnos
+            .Where(t => t.PersonaId == personaId)
+            .Include(t => t.Profesional)
+            .Include(t => t.Servicio)
+            .OrderBy(t => t.FechaHoraInicio)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Turno>> GetAllAsync()
+    {
+        return await _context.Turnos
+            .Include(t => t.Persona)
+            .Include(t => t.Profesional)
+            .Include(t => t.Servicio)
+            .OrderBy(t => t.FechaHoraInicio)
+            .ToListAsync();
+    }
 }

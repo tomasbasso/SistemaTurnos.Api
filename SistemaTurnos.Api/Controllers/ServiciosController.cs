@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using SistemaTurnos.Application.DTOs;
 using SistemaTurnos.Application.Interfaces.Services;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = "Administrador, Profesional, Cliente")]
 public class ServiciosController : ControllerBase
 {
     private readonly IServicioService _service;
@@ -27,6 +30,7 @@ public class ServiciosController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Administrador, Profesional")]
     public async Task<IActionResult> Post(ServicioCreateDto dto)
     {
         var servicio = await _service.CrearAsync(dto);
@@ -34,6 +38,7 @@ public class ServiciosController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = "Administrador, Profesional")]
     public async Task<IActionResult> Put(int id, ServicioUpdateDto dto)
     {
         await _service.ActualizarAsync(id, dto);
@@ -41,6 +46,7 @@ public class ServiciosController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Administrador, Profesional")]
     public async Task<IActionResult> Delete(int id)
     {
         await _service.EliminarAsync(id);

@@ -1,4 +1,6 @@
-﻿namespace SistemaTurnos.Application.DTOs;
+﻿using SistemaTurnos.Domain.Enums;
+
+namespace SistemaTurnos.Application.DTOs;
 
 public class PersonaDto
 {
@@ -6,4 +8,5 @@ public class PersonaDto
     public string Nombre { get; set; } = null!;
     public string Dni { get; set; } = null!;
     public string Email { get; set; } = null!;
+    public Rol Rol { get; set; }
 }

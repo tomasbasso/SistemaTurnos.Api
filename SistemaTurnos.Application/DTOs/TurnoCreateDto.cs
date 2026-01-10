@@ -3,9 +3,6 @@
 public class TurnoCreateDto
 {
     [Required]
-    public int PersonaId { get; set; }
-
-    [Required]
     public int ProfesionalId { get; set; }
 
     [Required]

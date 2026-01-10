@@ -17,6 +17,7 @@ public class Turno
 
     // Navegación
     public Persona Persona { get; set; } = null!;
+    public Profesional Profesional { get; set; } = null!;
     public Servicio Servicio { get; set; } = null!;
 
     protected Turno() { }

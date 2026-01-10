@@ -1,4 +1,6 @@
-﻿namespace SistemaTurnos.Domain.Entities
+﻿using System.Collections.Generic;
+
+namespace SistemaTurnos.Domain.Entities
 {
     public class Servicio
     {
@@ -8,6 +10,8 @@
         public int DuracionMinutos { get; set; }
         public decimal Precio { get; set; }
         public bool Activo { get; set; } = true;
+
+        public ICollection<Profesional> Profesionales { get; set; } = new List<Profesional>();
 
         protected Servicio() { } // EF
 

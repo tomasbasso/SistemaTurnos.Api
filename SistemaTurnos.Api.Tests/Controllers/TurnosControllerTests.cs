@@ -17,7 +17,6 @@ public class TurnosControllerTests
     {
         var dto = new TurnoCreateDto
         {
-            PersonaId = 1,
             ProfesionalId = 1,
             ServicioId = 1,
             FechaHoraInicio = DateTime.Now.AddHours(1)
@@ -36,7 +35,6 @@ public class TurnosControllerTests
     {
         var dto = new TurnoCreateDto
         {
-            PersonaId = 1,
             ProfesionalId = 1,
             ServicioId = 1,
             FechaHoraInicio = DateTime.Now.AddHours(-2)
@@ -54,7 +52,6 @@ public class TurnosControllerTests
     {
         var dto = new TurnoCreateDto
         {
-            PersonaId = 1,
             ProfesionalId = 1,
             ServicioId = 1,
             FechaHoraInicio = DateTime.Now.AddHours(1)

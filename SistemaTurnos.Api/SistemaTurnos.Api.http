@@ -4,3 +4,16 @@ GET {{SistemaTurnos.Api_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+POST {{SistemaTurnos.Api_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "nombre": "Juan Perez",
+  "dni": "12345678",
+  "email": "juan@example.com",
+  "password": "password123",
+  "rol": 0
+}
+
+###

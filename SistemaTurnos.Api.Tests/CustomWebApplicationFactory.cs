@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SistemaTurnos.Domain.Entities;
+using SistemaTurnos.Domain.Enums;
 using SistemaTurnos.Infrastructure.Persistence;
 using System.Linq;
 
@@ -42,11 +43,13 @@ public class CustomWebApplicationFactory
             db.Personas.Add(new Persona(
                 nombre: "Juan",
                 dni: "12345678",
-                email: "juan@test.com"
+                email: "juan@test.com",
+                passwordHash: "some_hash",
+                rol: Rol.Cliente
             ));
 
             db.Profesionales.Add(new Profesional(
-                nombre: "Dr. Smith",
+                personaId: 1,
                 matricula: "MAT-001"
             ));
 

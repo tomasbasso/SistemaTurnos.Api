@@ -65,7 +65,7 @@ namespace SistemaTurnos.Api.Middleware
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error inesperado");
+                _logger.LogError(ex, "Error inesperado: {Message}", ex.Message);
 
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 context.Response.ContentType = "application/json";

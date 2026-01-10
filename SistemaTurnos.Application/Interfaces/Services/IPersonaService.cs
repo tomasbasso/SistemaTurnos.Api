@@ -1,5 +1,6 @@
 ﻿using SistemaTurnos.Application.DTOs;
 using SistemaTurnos.Application.DTOs.Common;
+using SistemaTurnos.Domain.Entities;
 
 namespace SistemaTurnos.Application.Interfaces.Services
 {
@@ -18,5 +19,7 @@ namespace SistemaTurnos.Application.Interfaces.Services
         Task ReactivarAsync(int id);
         Task<PersonaDto?> GetByIdAsync(int id);
         Task<List<PersonaDto>> GetAllAsync(string? busqueda);
+        Task<PersonaDto?> GetByEmailAsync(string email);
+        Task<Persona?> GetPersonaByEmailAsync(string email);
     }
 }

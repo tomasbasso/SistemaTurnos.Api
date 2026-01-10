@@ -22,14 +22,77 @@ namespace SistemaTurnos.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("SistemaTurnos.Domain.Entities.Cliente", b =>
+            modelBuilder.Entity("ProfesionalServicio", b =>
+                {
+                    b.Property<int>("ProfesionalesId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ServiciosId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ProfesionalesId", "ServiciosId");
+
+                    b.HasIndex("ServiciosId");
+
+                    b.ToTable("ProfesionalServicio");
+                });
+
+            modelBuilder.Entity("SistemaTurnos.Domain.Entities.BloqueoTiempo", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("FechaHoraFin")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaHoraInicio")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Motivo")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("ProfesionalId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Clientes", (string)null);
+                    b.HasIndex("ProfesionalId");
+
+                    b.ToTable("BloqueosTiempo", (string)null);
+                });
+
+            modelBuilder.Entity("SistemaTurnos.Domain.Entities.HorarioTrabajo", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("DiaSemana")
+                        .HasColumnType("int");
+
+                    b.Property<TimeOnly>("HoraFin")
+                        .HasColumnType("time");
+
+                    b.Property<TimeOnly>("HoraInicio")
+                        .HasColumnType("time");
+
+                    b.Property<int>("ProfesionalId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProfesionalId");
+
+                    b.ToTable("HorariosTrabajo", (string)null);
                 });
 
             modelBuilder.Entity("SistemaTurnos.Domain.Entities.Persona", b =>
@@ -60,6 +123,13 @@ namespace SistemaTurnos.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Rol")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Dni")
@@ -86,14 +156,15 @@ namespace SistemaTurnos.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("Nombre")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                    b.Property<int>("PersonaId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Matricula")
+                        .IsUnique();
+
+                    b.HasIndex("PersonaId")
                         .IsUnique();
 
                     b.ToTable("Profesionales", (string)null);
@@ -131,42 +202,6 @@ namespace SistemaTurnos.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Servicios", (string)null);
-                });
-
-            modelBuilder.Entity("SistemaTurnos.Domain.Entities.Usuario", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("Activo")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<int>("PersonaId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Rol")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PersonaId");
-
-                    b.ToTable("Usuarios", (string)null);
                 });
 
             modelBuilder.Entity("Turno", b =>
@@ -209,23 +244,49 @@ namespace SistemaTurnos.Infrastructure.Migrations
                     b.ToTable("Turnos");
                 });
 
-            modelBuilder.Entity("SistemaTurnos.Domain.Entities.Cliente", b =>
+            modelBuilder.Entity("ProfesionalServicio", b =>
                 {
-                    b.HasOne("SistemaTurnos.Domain.Entities.Persona", "Persona")
-                        .WithOne()
-                        .HasForeignKey("SistemaTurnos.Domain.Entities.Cliente", "Id")
-                        .OnDelete(DeleteBehavior.Restrict)
+                    b.HasOne("SistemaTurnos.Domain.Entities.Profesional", null)
+                        .WithMany()
+                        .HasForeignKey("ProfesionalesId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Persona");
+                    b.HasOne("SistemaTurnos.Domain.Entities.Servicio", null)
+                        .WithMany()
+                        .HasForeignKey("ServiciosId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
-            modelBuilder.Entity("SistemaTurnos.Domain.Entities.Usuario", b =>
+            modelBuilder.Entity("SistemaTurnos.Domain.Entities.BloqueoTiempo", b =>
+                {
+                    b.HasOne("SistemaTurnos.Domain.Entities.Profesional", "Profesional")
+                        .WithMany("BloqueosTiempo")
+                        .HasForeignKey("ProfesionalId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Profesional");
+                });
+
+            modelBuilder.Entity("SistemaTurnos.Domain.Entities.HorarioTrabajo", b =>
+                {
+                    b.HasOne("SistemaTurnos.Domain.Entities.Profesional", "Profesional")
+                        .WithMany("HorariosTrabajo")
+                        .HasForeignKey("ProfesionalId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Profesional");
+                });
+
+            modelBuilder.Entity("SistemaTurnos.Domain.Entities.Profesional", b =>
                 {
                     b.HasOne("SistemaTurnos.Domain.Entities.Persona", "Persona")
-                        .WithMany()
-                        .HasForeignKey("PersonaId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .WithOne("Profesional")
+                        .HasForeignKey("SistemaTurnos.Domain.Entities.Profesional", "PersonaId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Persona");
@@ -236,24 +297,38 @@ namespace SistemaTurnos.Infrastructure.Migrations
                     b.HasOne("SistemaTurnos.Domain.Entities.Persona", "Persona")
                         .WithMany()
                         .HasForeignKey("PersonaId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("SistemaTurnos.Domain.Entities.Profesional", null)
+                    b.HasOne("SistemaTurnos.Domain.Entities.Profesional", "Profesional")
                         .WithMany()
                         .HasForeignKey("ProfesionalId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SistemaTurnos.Domain.Entities.Servicio", "Servicio")
                         .WithMany()
                         .HasForeignKey("ServicioId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Persona");
 
+                    b.Navigation("Profesional");
+
                     b.Navigation("Servicio");
+                });
+
+            modelBuilder.Entity("SistemaTurnos.Domain.Entities.Persona", b =>
+                {
+                    b.Navigation("Profesional");
+                });
+
+            modelBuilder.Entity("SistemaTurnos.Domain.Entities.Profesional", b =>
+                {
+                    b.Navigation("BloqueosTiempo");
+
+                    b.Navigation("HorariosTrabajo");
                 });
 #pragma warning restore 612, 618
         }

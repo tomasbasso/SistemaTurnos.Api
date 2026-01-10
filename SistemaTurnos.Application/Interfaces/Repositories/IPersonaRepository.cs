@@ -8,6 +8,7 @@ namespace SistemaTurnos.Application.Interfaces.Repositories
         Task AddAsync(Persona persona);
         Task<Persona?> GetByIdAsync(int id);
         Task<List<Persona>> GetAllAsync(string? busqueda);
+        Task<Persona?> GetByEmailAsync(string email);
         Task SaveChangesAsync();
 
         Task<(List<Persona> Items, int Total)>

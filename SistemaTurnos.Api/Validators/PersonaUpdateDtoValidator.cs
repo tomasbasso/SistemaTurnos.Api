@@ -25,5 +25,12 @@ public class PersonaUpdateDtoValidator : AbstractValidator<PersonaUpdateDto>
                 .EmailAddress()
                 .WithMessage("El email no es válido");
         });
+
+        When(x => x.Rol.HasValue, () =>
+        {
+            RuleFor(x => x.Rol.Value)
+                .IsInEnum()
+                .WithMessage("Rol inválido");
+        });
     }
 }
