@@ -25,6 +25,7 @@ builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        options.JsonSerializerOptions.Converters.Add(new SistemaTurnos.Api.Converters.SpanishDayOfWeekConverter());
     });
 
 // Authentication
@@ -104,6 +105,9 @@ builder.Services.AddScoped<IBloqueoTiempoRepository, BloqueoTiempoRepository>();
 builder.Services.AddScoped<IBloqueoTiempoService, BloqueoTiempoService>();
 
 builder.Services.AddScoped<IProfesionalServicioService, ProfesionalServicioService>();
+
+builder.Services.AddScoped<IReporteService, ReporteService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 
 var app = builder.Build();

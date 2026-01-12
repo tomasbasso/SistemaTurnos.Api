@@ -22,4 +22,6 @@ public interface ITurnoRepository
     Task<IEnumerable<Turno>> GetAllAsync();
 
     Task<IEnumerable<Turno>> GetByFecha(DateTime fecha);
+    Task<IEnumerable<Turno>> GetTurnosByProfesionalAndDate(int profesionalId, DateTime fecha);
+    Task<IEnumerable<Turno>> GetByMes(int mes, int anio);
 }

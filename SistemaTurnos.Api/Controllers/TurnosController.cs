@@ -18,7 +18,7 @@ using System.Security.Claims;
 ﻿    // CREAR TURNO
 ﻿    // --------------------
 ﻿    [HttpPost]
-﻿    [Authorize(Roles = "Cliente")]
+﻿    [Authorize(Roles = "Cliente, Administrador, Profesional")]
 ﻿    public async Task<IActionResult> Crear([FromBody] TurnoCreateDto dto)
 ﻿    {
 ﻿        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));

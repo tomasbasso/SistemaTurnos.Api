@@ -77,6 +77,20 @@ public class TurnoRepository : ITurnoRepository
             .Where(t =>
                 t.FechaHoraInicio >= desde &&
                 t.FechaHoraInicio < hasta)
+            .Include(t => t.Servicio)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Turno>> GetByMes(int mes, int anio)
+    {
+        var inicioMes = new DateTime(anio, mes, 1);
+        var finMes = inicioMes.AddMonths(1);
+
+        return await _context.Turnos
+            .Where(t =>
+                t.FechaHoraInicio >= inicioMes &&
+                t.FechaHoraInicio < finMes)
+            .Include(t => t.Servicio)
             .ToListAsync();
     }
 
@@ -84,6 +98,23 @@ public class TurnoRepository : ITurnoRepository
     {
         return await _context.Turnos
             .Where(t => t.PersonaId == personaId)
+            .Include(t => t.Profesional)
+            .Include(t => t.Servicio)
+            .OrderBy(t => t.FechaHoraInicio)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Turno>> GetTurnosByProfesionalAndDate(int profesionalId, DateTime fecha)
+    {
+        var desde = fecha.Date;
+        var hasta = desde.AddDays(1);
+
+        return await _context.Turnos
+            .Where(t => 
+                t.ProfesionalId == profesionalId &&
+                t.FechaHoraInicio >= desde &&
+                t.FechaHoraInicio < hasta)
+            .Include(t => t.Persona)
             .Include(t => t.Profesional)
             .Include(t => t.Servicio)
             .OrderBy(t => t.FechaHoraInicio)

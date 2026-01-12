@@ -3,6 +3,8 @@ using SistemaTurnos.Domain.Exceptions;
 using SistemaTurnos.Application.Exceptions;
 using System.Linq;
 
+using SistemaTurnos.Application.Interfaces.Services;
+
 public class TurnoService
 {
     private readonly ITurnoRepository _turnos;
@@ -11,6 +13,7 @@ public class TurnoService
     private readonly IServicioRepository _servicios;
     private readonly IHorarioTrabajoRepository _horarios;
     private readonly IBloqueoTiempoRepository _bloqueos;
+    private readonly IEmailService _emailService;
 
     public TurnoService(
         ITurnoRepository turnos,
@@ -18,7 +21,8 @@ public class TurnoService
         IProfesionalRepository profesionales,
         IServicioRepository servicios,
         IHorarioTrabajoRepository horarios,
-        IBloqueoTiempoRepository bloqueos)
+        IBloqueoTiempoRepository bloqueos,
+        IEmailService emailService)
     {
         _turnos = turnos;
         _personas = personas;
@@ -26,6 +30,7 @@ public class TurnoService
         _servicios = servicios;
         _horarios = horarios;
         _bloqueos = bloqueos;
+        _emailService = emailService;
     }
 
     public async Task<Turno> CrearAsync(TurnoCreateDto dto, int personaId)
@@ -106,6 +111,26 @@ public class TurnoService
         );
 
         await _turnos.AddAsync(turno);
+        
+        // Notificacion Email
+        var emailBody = $@"
+            <h2>¡Turno Confirmado!</h2>
+            <p>Hola <strong>{persona.Nombre}</strong>,</p>
+            <p>Tu turno ha sido reservado exitosamente.</p>
+            <ul>
+                <li><strong>Fecha y Hora:</strong> {turno.FechaHoraInicio:dd/MM/yyyy HH:mm}</li>
+                <li><strong>Profesional:</strong> {profesional.Persona?.Nombre ?? "Profesional"}</li>
+                <li><strong>Servicio:</strong> {servicio.Nombre}</li>
+                <li><strong>Precio:</strong> ${servicio.Precio}</li>
+            </ul>
+            <p>¡Te esperamos!</p>";
+
+        await _emailService.SendEmailAsync(
+            persona.Email, 
+            "Confirmación de Turno - Sistema de Turnos", 
+            emailBody
+        );
+
         return turno;
     }
     public async Task FinalizarAsync(int turnoId)
@@ -125,6 +150,15 @@ public class TurnoService
 
         turno.Cancelar();
         await _turnos.UpdateAsync(turno);
+
+         if (turno.Persona != null) // Ensure Persona is loaded or handled
+         {
+            await _emailService.SendEmailAsync(
+                turno.Persona.Email,
+                "Turno Cancelado",
+                $"Hola {turno.Persona.Nombre}, tu turno del {turno.FechaHoraInicio} ha sido cancelado."
+            );
+         }
     }
     public async Task<IEnumerable<AgendaTurnoDto>> ObtenerAgendaProfesionalAsync(
       int profesionalId,

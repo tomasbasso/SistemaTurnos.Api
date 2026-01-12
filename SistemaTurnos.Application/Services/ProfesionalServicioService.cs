@@ -28,9 +28,7 @@ namespace SistemaTurnos.Application.Services
                 throw new NotFoundException("Profesional no encontrado.");
             }
 
-            // Asumiendo que GetByIdAsync incluye los servicios. Si no, necesitamos un método específico.
-            // Por ahora, asumimos que sí. Necesitaremos verificar el repositorio.
-            
+         
             return profesional.Servicios.Select(s => new ServicioDto {
                 Id = s.Id,
                 Nombre = s.Nombre,
