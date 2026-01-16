@@ -7,6 +7,7 @@ public interface IProfesionalRepository
 
     Task AddAsync(Profesional profesional);
     Task<Profesional?> GetByIdAsync(int id);
+    Task<Profesional?> GetByPersonaIdAsync(int personaId);
 
     Task<(List<Profesional> Items, int Total)> GetPagedAsync(
         string? busqueda,

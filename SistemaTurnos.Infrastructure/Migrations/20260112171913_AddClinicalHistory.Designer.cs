@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SistemaTurnos.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using SistemaTurnos.Infrastructure.Persistence;
 namespace SistemaTurnos.Infrastructure.Migrations
 {
     [DbContext(typeof(SistemaTurnosDbContext))]
-    partial class SistemaTurnosDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260112171913_AddClinicalHistory")]
+    partial class AddClinicalHistory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -35,45 +38,6 @@ namespace SistemaTurnos.Infrastructure.Migrations
                     b.HasIndex("ServiciosId");
 
                     b.ToTable("ProfesionalServicio");
-                });
-
-            modelBuilder.Entity("SistemaTurnos.Domain.Entities.ArchivoAdjunto", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("FechaSubida")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("NombreOriginal")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<int>("NotaClinicaId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("RutaArchivo")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<long>("TamanioBytes")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("TipoArchivo")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NotaClinicaId");
-
-                    b.ToTable("ArchivosAdjuntos", (string)null);
                 });
 
             modelBuilder.Entity("SistemaTurnos.Domain.Entities.BloqueoTiempo", b =>
@@ -134,34 +98,6 @@ namespace SistemaTurnos.Infrastructure.Migrations
                     b.ToTable("HorariosTrabajo", (string)null);
                 });
 
-            modelBuilder.Entity("SistemaTurnos.Domain.Entities.NotaClinica", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Contenido")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("FechaCreacion")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("TurnoId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("VisibleParaPaciente")
-                        .HasColumnType("bit");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TurnoId");
-
-                    b.ToTable("NotasClinicas", (string)null);
-                });
-
             modelBuilder.Entity("SistemaTurnos.Domain.Entities.Persona", b =>
                 {
                     b.Property<int>("Id")
@@ -217,12 +153,6 @@ namespace SistemaTurnos.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
-
-                    b.Property<string>("Descripcion")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FotoUrl")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Matricula")
                         .IsRequired()
@@ -332,17 +262,6 @@ namespace SistemaTurnos.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("SistemaTurnos.Domain.Entities.ArchivoAdjunto", b =>
-                {
-                    b.HasOne("SistemaTurnos.Domain.Entities.NotaClinica", "NotaClinica")
-                        .WithMany("ArchivosAdjuntos")
-                        .HasForeignKey("NotaClinicaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("NotaClinica");
-                });
-
             modelBuilder.Entity("SistemaTurnos.Domain.Entities.BloqueoTiempo", b =>
                 {
                     b.HasOne("SistemaTurnos.Domain.Entities.Profesional", "Profesional")
@@ -363,17 +282,6 @@ namespace SistemaTurnos.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Profesional");
-                });
-
-            modelBuilder.Entity("SistemaTurnos.Domain.Entities.NotaClinica", b =>
-                {
-                    b.HasOne("Turno", "Turno")
-                        .WithMany("NotasClinicas")
-                        .HasForeignKey("TurnoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Turno");
                 });
 
             modelBuilder.Entity("SistemaTurnos.Domain.Entities.Profesional", b =>
@@ -414,11 +322,6 @@ namespace SistemaTurnos.Infrastructure.Migrations
                     b.Navigation("Servicio");
                 });
 
-            modelBuilder.Entity("SistemaTurnos.Domain.Entities.NotaClinica", b =>
-                {
-                    b.Navigation("ArchivosAdjuntos");
-                });
-
             modelBuilder.Entity("SistemaTurnos.Domain.Entities.Persona", b =>
                 {
                     b.Navigation("Profesional");
@@ -429,11 +332,6 @@ namespace SistemaTurnos.Infrastructure.Migrations
                     b.Navigation("BloqueosTiempo");
 
                     b.Navigation("HorariosTrabajo");
-                });
-
-            modelBuilder.Entity("Turno", b =>
-                {
-                    b.Navigation("NotasClinicas");
                 });
 #pragma warning restore 612, 618
         }

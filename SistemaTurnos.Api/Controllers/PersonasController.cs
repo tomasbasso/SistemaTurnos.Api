@@ -6,7 +6,6 @@ using SistemaTurnos.Application.Interfaces.Services;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "Administrador")]
 public class PersonasController : ControllerBase
 {
     private readonly IPersonaService _personaService;
@@ -20,6 +19,7 @@ public class PersonasController : ControllerBase
     // POST - Crear persona
     // ============================
     [HttpPost]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(PersonaDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
@@ -38,6 +38,7 @@ public class PersonasController : ControllerBase
     // PUT - Actualizar persona
     // ============================
     [HttpPut("{id}")]
+    [Authorize(Roles = "Administrador")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -52,6 +53,7 @@ public class PersonasController : ControllerBase
     // DELETE - Borrado lógico
     // ============================
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Administrador")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int id)
@@ -64,6 +66,7 @@ public class PersonasController : ControllerBase
     // PUT - Reactivar persona
     // ============================
     [HttpPut("reactivar/{id}")]
+    [Authorize(Roles = "Administrador")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Reactivar(int id)
@@ -91,6 +94,7 @@ public class PersonasController : ControllerBase
     // GET - Listado / búsqueda
     // ============================
     [HttpGet]
+    [Authorize(Roles = "Administrador")]
     [ProducesResponseType(typeof(PagedResultDto<PersonaDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Get(
       [FromQuery] string? busqueda,
@@ -107,5 +111,14 @@ public class PersonasController : ControllerBase
             sortDir);
 
         return Ok(result);
+        return Ok(result);
+    }
+
+    [HttpGet("profesional/{profesionalId}")]
+    [Authorize(Roles = "Profesional,Administrador")]
+    public async Task<IActionResult> GetPacientesByProfesional(int profesionalId)
+    {
+        var pacientes = await _personaService.GetPacientesByProfesionalAsync(profesionalId);
+        return Ok(pacientes);
     }
 }

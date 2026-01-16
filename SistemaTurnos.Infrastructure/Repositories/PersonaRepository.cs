@@ -20,6 +20,7 @@ public class PersonaRepository : IPersonaRepository
         string? sortDir)
     {
         IQueryable<Persona> query = _context.Personas
+            .Include(p => p.Profesional)
             .Where(p => p.Activo);
 
         if (!string.IsNullOrWhiteSpace(busqueda))

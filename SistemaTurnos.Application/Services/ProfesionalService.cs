@@ -27,9 +27,17 @@
 ﻿            var persona = await _personaRepository.GetByIdAsync(dto.PersonaId) 
 ﻿                ?? throw new BusinessException("La persona especificada no existe.");
 ﻿
-﻿            // Validar que la persona tenga el rol de profesional
-﻿            if (persona.Rol != Rol.Profesional)
-﻿                throw new BusinessException("La persona debe tener el rol de 'Profesional'.");
+﻿            // Si la persona no es profesional, la promovemos
+            if (persona.Rol != Rol.Profesional)
+            {
+                persona.Rol = Rol.Profesional;
+                // Assuming EF Core tracking will save this when we save the new Profesional, 
+                // BUT we are saving via _profesionalRepository. 
+                // We might need to save persona changes explicitly if repositories use different contexts (unlikely) 
+                // or if we need to call update on persona repo.
+                // Safest is to just update the persona.
+                await _personaRepository.SaveChangesAsync(); 
+            }
 ﻿
 ﻿            // Validar que la persona no esté ya asignada a otro profesional
 ﻿            if (await _profesionalRepository.ExisteAsignacion(dto.PersonaId))
@@ -112,12 +120,41 @@
 ﻿            };
 ﻿        }
 ﻿
-﻿        private static ProfesionalDto MapToDto(Profesional p) => new()
-﻿        {
-﻿            Id = p.Id,
-﻿            Nombre = p.Persona?.Nombre ?? "N/A", // Obtener nombre de la Persona
-﻿            Matricula = p.Matricula
-﻿        };
+﻿        public async Task ActualizarPerfilAsync(int id, ProfesionalPerfilUpdateDto dto)
+        {
+             var profesional = await _profesionalRepository.GetByIdAsync(id)
+                ?? throw new BusinessException("Profesional no encontrado");
+             
+             profesional.Descripcion = dto.Descripcion;
+             
+             await _profesionalRepository.SaveChangesAsync();
+        }
+
+        public async Task ActualizarFotoAsync(int id, string fotoUrl)
+        {
+             var profesional = await _profesionalRepository.GetByIdAsync(id)
+                ?? throw new BusinessException("Profesional no encontrado");
+             
+             profesional.FotoUrl = fotoUrl;
+             
+             await _profesionalRepository.SaveChangesAsync();
+        }
+
+        private static ProfesionalDto MapToDto(Profesional p) => new()
+        {
+            Id = p.Id,
+            Nombre = p.Persona?.Nombre ?? "N/A", // Obtener nombre de la Persona
+            Matricula = p.Matricula,
+            FotoUrl = p.FotoUrl,
+            Descripcion = p.Descripcion,
+            Servicios = p.Servicios.Select(s => new ServicioDto 
+            {
+                Id = s.Id,
+                Nombre = s.Nombre,
+                Precio = s.Precio,
+                DuracionMinutos = s.DuracionMinutos
+            }).ToList()
+        };
 ﻿    }
 ﻿}
 ﻿

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SistemaTurnos.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using SistemaTurnos.Infrastructure.Persistence;
 namespace SistemaTurnos.Infrastructure.Migrations
 {
     [DbContext(typeof(SistemaTurnosDbContext))]
-    partial class SistemaTurnosDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260112172015_AddNotasClinicas")]
+    partial class AddNotasClinicas
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -50,30 +53,27 @@ namespace SistemaTurnos.Infrastructure.Migrations
 
                     b.Property<string>("NombreOriginal")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("NotaClinicaId")
                         .HasColumnType("int");
 
                     b.Property<string>("RutaArchivo")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("TamanioBytes")
                         .HasColumnType("bigint");
 
                     b.Property<string>("TipoArchivo")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("NotaClinicaId");
 
-                    b.ToTable("ArchivosAdjuntos", (string)null);
+                    b.ToTable("ArchivosAdjuntos");
                 });
 
             modelBuilder.Entity("SistemaTurnos.Domain.Entities.BloqueoTiempo", b =>
@@ -159,7 +159,7 @@ namespace SistemaTurnos.Infrastructure.Migrations
 
                     b.HasIndex("TurnoId");
 
-                    b.ToTable("NotasClinicas", (string)null);
+                    b.ToTable("NotasClinicas");
                 });
 
             modelBuilder.Entity("SistemaTurnos.Domain.Entities.Persona", b =>
@@ -217,12 +217,6 @@ namespace SistemaTurnos.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
-
-                    b.Property<string>("Descripcion")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FotoUrl")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Matricula")
                         .IsRequired()

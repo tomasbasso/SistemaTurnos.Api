@@ -15,15 +15,18 @@ namespace SistemaTurnos.Application.Services
     public class AuthService : IAuthService
     {
         private readonly IPersonaService _personaService;
+        private readonly IProfesionalRepository _profesionalRepository;
         private readonly IConfiguration _configuration;
         private readonly ILogger<AuthService> _logger;
 
         public AuthService(
             IPersonaService personaService,
+            IProfesionalRepository profesionalRepository,
             IConfiguration configuration,
             ILogger<AuthService> logger)
         {
             _personaService = personaService;
+            _profesionalRepository = profesionalRepository;
             _configuration = configuration;
             _logger = logger;
         }
@@ -53,10 +56,18 @@ namespace SistemaTurnos.Application.Services
             var userDto = await _personaService.GetByEmailAsync(dto.Email);
             var token = GenerateToken(persona);
 
+            int? profesionalId = null;
+            if (persona.Rol == Domain.Enums.Rol.Profesional)
+            {
+                 var profesional = await _profesionalRepository.GetByPersonaIdAsync(persona.Id);
+                 if (profesional != null) profesionalId = profesional.Id;
+            }
+
             return new AuthResponseDto
             {
                 Token = token,
-                User = userDto!
+                User = userDto!,
+                ProfesionalId = profesionalId
             };
         }
 

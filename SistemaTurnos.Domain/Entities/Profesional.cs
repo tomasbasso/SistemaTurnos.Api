@@ -8,6 +8,9 @@ namespace SistemaTurnos.Domain.Entities
         public string Matricula { get; set; }
         public bool Activo { get; set; } = true;
 
+        public string? FotoUrl { get; set; }
+        public string? Descripcion { get; set; }
+
         public int PersonaId { get; set; }
         public Persona Persona { get; set; } = null!;
 

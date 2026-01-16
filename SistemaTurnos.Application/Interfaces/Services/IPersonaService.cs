@@ -21,5 +21,6 @@ namespace SistemaTurnos.Application.Interfaces.Services
         Task<List<PersonaDto>> GetAllAsync(string? busqueda);
         Task<PersonaDto?> GetByEmailAsync(string email);
         Task<Persona?> GetPersonaByEmailAsync(string email);
+        Task<IEnumerable<PersonaDto>> GetPacientesByProfesionalAsync(int profesionalId);
     }
 }

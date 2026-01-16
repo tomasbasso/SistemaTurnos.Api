@@ -41,6 +41,13 @@ public class ProfesionalRepository : IProfesionalRepository
             .FirstOrDefaultAsync(p => p.Id == id);
     }
 
+    public async Task<Profesional?> GetByPersonaIdAsync(int personaId)
+    {
+        return await _context.Profesionales
+            .Include(p => p.Persona)
+            .FirstOrDefaultAsync(p => p.PersonaId == personaId);
+    }
+
     public async Task<(List<Profesional> Items, int Total)> GetPagedAsync(
         string? busqueda,
         int page,
@@ -50,6 +57,7 @@ public class ProfesionalRepository : IProfesionalRepository
     {
         var query = _context.Profesionales
             .Include(p => p.Persona)
+            .Include(p => p.Servicios)
             .Where(p => p.Activo)
             .AsQueryable();
 

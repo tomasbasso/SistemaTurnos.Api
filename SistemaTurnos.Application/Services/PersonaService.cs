@@ -11,10 +11,14 @@ namespace SistemaTurnos.Application.Services
     public class PersonaService : IPersonaService
     {
         private readonly IPersonaRepository _repository;
+        private readonly IProfesionalRepository _profesionalRepository;
+        private readonly ITurnoRepository _turnoRepository;
 
-        public PersonaService(IPersonaRepository repository)
+        public PersonaService(IPersonaRepository repository, IProfesionalRepository profesionalRepository, ITurnoRepository turnoRepository)
         {
             _repository = repository;
+            _profesionalRepository = profesionalRepository;
+            _turnoRepository = turnoRepository;
         }
         public async Task<PagedResultDto<PersonaDto>> GetPagedAsync(
             string? busqueda,
@@ -61,6 +65,14 @@ namespace SistemaTurnos.Application.Services
 
             await _repository.AddAsync(persona);
             await _repository.SaveChangesAsync();
+
+            // Si es Profesional, crear registro en tabla Profesionales
+            if (persona.Rol == Domain.Enums.Rol.Profesional)
+            {
+                var profesional = new Profesional(persona.Id, "PENDIENTE"); // Matricula por defecto
+                await _profesionalRepository.AddAsync(profesional);
+                await _profesionalRepository.SaveChangesAsync();
+            }
 
             return MapToDto(persona);
         }
@@ -163,6 +175,12 @@ namespace SistemaTurnos.Application.Services
             return await _repository.GetByEmailAsync(email);
         }
 
+        public async Task<IEnumerable<PersonaDto>> GetPacientesByProfesionalAsync(int profesionalId)
+        {
+            var pacientes = await _turnoRepository.GetPacientesByProfesionalAsync(profesionalId);
+            return pacientes.Select(MapToDto).ToList();
+        }
+
         // =========================
         // Mapping
         // =========================
@@ -172,7 +190,9 @@ namespace SistemaTurnos.Application.Services
             Nombre = p.Nombre,
             Dni = p.Dni,
             Email = p.Email,
-            Rol = p.Rol
+            Rol = p.Rol,
+            ProfesionalId = p.Profesional?.Id,
+            ProfesionalActivo = p.Profesional?.Activo ?? false
         };
     }
 }

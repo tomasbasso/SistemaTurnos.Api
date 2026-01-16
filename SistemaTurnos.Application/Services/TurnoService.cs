@@ -1,4 +1,5 @@
 ﻿using SistemaTurnos.Application.Interfaces.Repositories;
+using SistemaTurnos.Application.DTOs;
 using SistemaTurnos.Domain.Exceptions;
 using SistemaTurnos.Application.Exceptions;
 using System.Linq;
@@ -112,8 +113,8 @@ public class TurnoService
 
         await _turnos.AddAsync(turno);
         
-        // Notificacion Email
-        var emailBody = $@"
+        // Notificacion Email Cliente
+        var emailBodyCliente = $@"
             <h2>¡Turno Confirmado!</h2>
             <p>Hola <strong>{persona.Nombre}</strong>,</p>
             <p>Tu turno ha sido reservado exitosamente.</p>
@@ -128,8 +129,28 @@ public class TurnoService
         await _emailService.SendEmailAsync(
             persona.Email, 
             "Confirmación de Turno - Sistema de Turnos", 
-            emailBody
+            emailBodyCliente
         );
+
+        // Notificacion Email Profesional
+        if (profesional.Persona != null)
+        {
+             var emailBodyProf = $@"
+                <h2>Nuevo Turno Reservado</h2>
+                <p>Hola <strong>{profesional.Persona.Nombre}</strong>,</p>
+                <p>Se ha agendado un nuevo turno.</p>
+                <ul>
+                    <li><strong>Paciente:</strong> {persona.Nombre}</li>
+                    <li><strong>Fecha y Hora:</strong> {turno.FechaHoraInicio:dd/MM/yyyy HH:mm}</li>
+                    <li><strong>Servicio:</strong> {servicio.Nombre}</li>
+                </ul>";
+
+             await _emailService.SendEmailAsync(
+                profesional.Persona.Email,
+                "Nuevo Turno en Agenda",
+                emailBodyProf
+            );
+        }
 
         return turno;
     }
@@ -151,12 +172,24 @@ public class TurnoService
         turno.Cancelar();
         await _turnos.UpdateAsync(turno);
 
-         if (turno.Persona != null) // Ensure Persona is loaded or handled
+         // Notify Client
+         if (turno.Persona != null)
          {
             await _emailService.SendEmailAsync(
                 turno.Persona.Email,
                 "Turno Cancelado",
-                $"Hola {turno.Persona.Nombre}, tu turno del {turno.FechaHoraInicio} ha sido cancelado."
+                $"Hola {turno.Persona.Nombre}, tu turno del {turno.FechaHoraInicio:dd/MM/yyyy HH:mm} ha sido cancelado."
+            );
+         }
+
+         // Notify Professional
+         var profesional = await _profesionales.GetByIdAsync(turno.ProfesionalId);
+         if (profesional?.Persona != null)
+         {
+             await _emailService.SendEmailAsync(
+                profesional.Persona.Email,
+                "Turno Cancelado",
+                $"Hola {profesional.Persona.Nombre}, el turno con {turno.Persona?.Nombre ?? "Paciente"} del {turno.FechaHoraInicio:dd/MM/yyyy HH:mm} ha sido cancelado."
             );
          }
     }
@@ -202,5 +235,55 @@ public class TurnoService
     public async Task<IEnumerable<Turno>> GetAllTurnosAsync()
     {
         return await _turnos.GetAllAsync();
+    }
+    public async Task<IEnumerable<SlotDto>> GetAvailableSlotsAsync(int profesionalId, int servicioId, DateTime fecha)
+    {
+        var profesional = await _profesionales.GetByIdAsync(profesionalId);
+        if (profesional == null || !profesional.Activo)
+            throw new BusinessException("Profesional inválido");
+
+        var servicio = await _servicios.GetByIdAsync(servicioId);
+        if (servicio == null || !servicio.Activo)
+            throw new BusinessException("Servicio inválido");
+
+        var diaSemana = fecha.DayOfWeek;
+        var horarios = await _horarios.GetByProfesionalIdAsync(profesionalId);
+        var horarioDia = horarios.FirstOrDefault(h => h.DiaSemana == diaSemana && h.Activo);
+
+        if (horarioDia == null)
+            return Enumerable.Empty<SlotDto>();
+
+        var fechaBase = fecha.Date;
+        var inicioLaboral = fechaBase.Add(horarioDia.HoraInicio.ToTimeSpan());
+        var finLaboral = fechaBase.Add(horarioDia.HoraFin.ToTimeSpan());
+
+        var turnos = await _turnos.GetAgendaProfesionalAsync(profesionalId, inicioLaboral, finLaboral);
+        var bloqueos = await _bloqueos.GetByProfesionalIdAsync(profesionalId, inicioLaboral, finLaboral);
+
+        var slots = new List<SlotDto>();
+        var duracion = servicio.DuracionMinutos;
+        var cursor = inicioLaboral;
+
+        while (cursor.AddMinutes(duracion) <= finLaboral)
+        {
+            var finSlot = cursor.AddMinutes(duracion);
+            
+            bool ocupado = turnos.Any(t => t.FechaHoraInicio < finSlot && t.FechaHoraFin > cursor && t.Estado != SistemaTurnos.Domain.Enums.EstadoTurno.Cancelado) ||
+                           bloqueos.Any(b => b.FechaHoraInicio < finSlot && b.FechaHoraFin > cursor);
+
+            if (!ocupado && cursor > DateTime.Now)
+            {
+               slots.Add(new SlotDto
+               {
+                   Inicio = cursor,
+                   Fin = finSlot,
+                   Disponible = true
+               });
+            }
+
+            cursor = cursor.AddMinutes(duracion);
+        }
+        
+        return slots;
     }
 }

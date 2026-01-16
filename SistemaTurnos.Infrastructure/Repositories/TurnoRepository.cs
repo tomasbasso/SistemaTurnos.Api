@@ -99,6 +99,7 @@ public class TurnoRepository : ITurnoRepository
         return await _context.Turnos
             .Where(t => t.PersonaId == personaId)
             .Include(t => t.Profesional)
+                .ThenInclude(p => p.Persona)
             .Include(t => t.Servicio)
             .OrderBy(t => t.FechaHoraInicio)
             .ToListAsync();
@@ -116,6 +117,7 @@ public class TurnoRepository : ITurnoRepository
                 t.FechaHoraInicio < hasta)
             .Include(t => t.Persona)
             .Include(t => t.Profesional)
+                .ThenInclude(p => p.Persona)
             .Include(t => t.Servicio)
             .OrderBy(t => t.FechaHoraInicio)
             .ToListAsync();
@@ -126,8 +128,17 @@ public class TurnoRepository : ITurnoRepository
         return await _context.Turnos
             .Include(t => t.Persona)
             .Include(t => t.Profesional)
+                .ThenInclude(p => p.Persona)
             .Include(t => t.Servicio)
             .OrderBy(t => t.FechaHoraInicio)
+            .ToListAsync();
+    }
+    public async Task<IEnumerable<Persona>> GetPacientesByProfesionalAsync(int profesionalId)
+    {
+        return await _context.Turnos
+            .Where(t => t.ProfesionalId == profesionalId)
+            .Select(t => t.Persona)
+            .Distinct()
             .ToListAsync();
     }
 }

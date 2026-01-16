@@ -1,4 +1,5 @@
 ﻿using SistemaTurnos.Domain.Entities;
+using System.Collections.Generic;
 using SistemaTurnos.Domain.Enums;
 
 public class Turno
@@ -19,6 +20,8 @@ public class Turno
     public Persona Persona { get; set; } = null!;
     public Profesional Profesional { get; set; } = null!;
     public Servicio Servicio { get; set; } = null!;
+
+    public ICollection<NotaClinica> NotasClinicas { get; set; } = new List<NotaClinica>();
 
     protected Turno() { }
 

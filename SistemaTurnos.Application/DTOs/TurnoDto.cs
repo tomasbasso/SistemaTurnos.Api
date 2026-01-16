@@ -11,4 +11,8 @@ public class TurnoDto
     public DateTime FechaHoraFin { get; set; }
 
     public EstadoTurno Estado { get; set; }
+
+    public string? NombreProfesional { get; set; }
+    public string? NombrePaciente { get; set; }
+    public string? NombreServicio { get; set; }
 }

@@ -25,7 +25,7 @@ builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-        options.JsonSerializerOptions.Converters.Add(new SistemaTurnos.Api.Converters.SpanishDayOfWeekConverter());
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
 
 // Authentication
@@ -108,6 +108,8 @@ builder.Services.AddScoped<IProfesionalServicioService, ProfesionalServicioServi
 
 builder.Services.AddScoped<IReporteService, ReporteService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<INotaClinicaRepository, NotaClinicaRepository>();
+builder.Services.AddScoped<IHistorialClinicoService, HistorialClinicoService>();
 
 
 var app = builder.Build();
@@ -126,6 +128,10 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+
+
+app.UseStaticFiles();
 
 app.MapControllers();
 

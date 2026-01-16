@@ -124,4 +124,14 @@ using System.Security.Claims;
 ﻿        var turnos = await _service.GetAllTurnosAsync();
 ﻿        return Ok(turnos.Select(t => t.ToDto()));
 ﻿    }
-﻿}
+﻿    [HttpGet("slots-disponibles")]
+    [Authorize(Roles = "Administrador, Profesional, Cliente")]
+    public async Task<IActionResult> GetSlotsDisponibles(
+        [FromQuery] int profesionalId,
+        [FromQuery] int servicioId,
+        [FromQuery] DateTime fecha)
+    {
+        var slots = await _service.GetAvailableSlotsAsync(profesionalId, servicioId, fecha);
+        return Ok(slots);
+    }
+}

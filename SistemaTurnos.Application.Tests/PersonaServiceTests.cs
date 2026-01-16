@@ -11,11 +11,13 @@ using System.Threading.Tasks;
 public class PersonaServiceTests
 {
     private readonly Mock<IPersonaRepository> _repository = new();
+    private readonly Mock<IProfesionalRepository> _profesionalRepository = new();
+    private readonly Mock<ITurnoRepository> _turnoRepository = new();
     private readonly PersonaService _service;
 
     public PersonaServiceTests()
     {
-        _service = new PersonaService(_repository.Object);
+        _service = new PersonaService(_repository.Object, _profesionalRepository.Object, _turnoRepository.Object);
     }
 
     [Fact]

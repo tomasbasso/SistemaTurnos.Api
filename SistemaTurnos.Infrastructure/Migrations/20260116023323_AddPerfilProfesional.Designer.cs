@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SistemaTurnos.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using SistemaTurnos.Infrastructure.Persistence;
 namespace SistemaTurnos.Infrastructure.Migrations
 {
     [DbContext(typeof(SistemaTurnosDbContext))]
-    partial class SistemaTurnosDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260116023323_AddPerfilProfesional")]
+    partial class AddPerfilProfesional
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

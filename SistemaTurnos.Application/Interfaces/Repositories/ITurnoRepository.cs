@@ -24,4 +24,5 @@ public interface ITurnoRepository
     Task<IEnumerable<Turno>> GetByFecha(DateTime fecha);
     Task<IEnumerable<Turno>> GetTurnosByProfesionalAndDate(int profesionalId, DateTime fecha);
     Task<IEnumerable<Turno>> GetByMes(int mes, int anio);
+    Task<IEnumerable<Persona>> GetPacientesByProfesionalAsync(int profesionalId);
 }

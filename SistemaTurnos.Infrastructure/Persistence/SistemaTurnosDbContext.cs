@@ -15,6 +15,8 @@ public class SistemaTurnosDbContext : DbContext
     public DbSet<Servicio> Servicios => Set<Servicio>();
     public DbSet<HorarioTrabajo> HorariosTrabajo { get; set; }
     public DbSet<BloqueoTiempo> BloqueosTiempo { get; set; }
+    public DbSet<NotaClinica> NotasClinicas { get; set; }
+    public DbSet<ArchivoAdjunto> ArchivosAdjuntos { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -150,6 +152,28 @@ public class SistemaTurnosDbContext : DbContext
 
             entity.Property(s => s.Activo)
                 .HasDefaultValue(true);
+        });
+
+        modelBuilder.Entity<NotaClinica>(entity =>
+        {
+            entity.ToTable("NotasClinicas");
+            entity.HasKey(n => n.Id);
+            entity.Property(n => n.Contenido).IsRequired();
+            entity.HasOne(n => n.Turno)
+                  .WithMany(t => t.NotasClinicas)
+                  .HasForeignKey(n => n.TurnoId);
+            entity.HasMany(n => n.ArchivosAdjuntos)
+                  .WithOne(a => a.NotaClinica)
+                  .HasForeignKey(a => a.NotaClinicaId);
+        });
+
+        modelBuilder.Entity<ArchivoAdjunto>(entity =>
+        {
+            entity.ToTable("ArchivosAdjuntos");
+            entity.HasKey(a => a.Id);
+            entity.Property(a => a.NombreOriginal).IsRequired().HasMaxLength(255);
+            entity.Property(a => a.RutaArchivo).IsRequired().HasMaxLength(500);
+            entity.Property(a => a.TipoArchivo).HasMaxLength(100);
         });
 
     }

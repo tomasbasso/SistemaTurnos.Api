@@ -13,7 +13,10 @@ public static class TurnoMapper
             ServicioId = turno.ServicioId,
             FechaHoraInicio = turno.FechaHoraInicio,
             FechaHoraFin = turno.FechaHoraFin,
-            Estado = turno.Estado
+            Estado = turno.Estado,
+            NombreProfesional = turno.Profesional?.Persona?.Nombre,
+            NombrePaciente = turno.Persona?.Nombre,
+            NombreServicio = turno.Servicio?.Nombre
         };
     }
 }
