@@ -1,0 +1,13 @@
+title = "Custom gitleaks config for SistemaTurnos"
+
+[allowlist]
+# Example allowlist patterns to reduce noise in tests
+regexes = ['^juan@test.com$']
+
+[rules]
+# You can add custom rules here if needed; gitleaks default rules cover common secrets
+# Example rule (JWT-like):
+[[rules]]
+description = "Possible JWT key (base64 or hex)"
+regex = '''(?i)(?:jwt|secret|key)["'\s:=]{0,10}[A-Za-z0-9\-_]{32,}'''
+entropy = 3
