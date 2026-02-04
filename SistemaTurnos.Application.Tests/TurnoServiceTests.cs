@@ -2,6 +2,7 @@
 using SistemaTurnos.Application.DTOs;
 using SistemaTurnos.Application.Exceptions;
 using SistemaTurnos.Application.Interfaces.Repositories;
+using SistemaTurnos.Application.Interfaces.Services;
 using SistemaTurnos.Domain.Entities;
 using SistemaTurnos.Domain.Enums;
 using SistemaTurnos.Domain.Exceptions;
@@ -19,6 +20,11 @@ public class TurnoServiceTests
     private readonly Mock<IServicioRepository> _servicios = new();
     private readonly Mock<IHorarioTrabajoRepository> _horarios = new();
     private readonly Mock<IBloqueoTiempoRepository> _bloqueos = new();
+    private readonly Mock<IEmailService> _emailService = new();
+    private readonly Mock<IAuditService> _auditService = new();
+    private readonly Mock<IEmailTemplateService> _emailTemplateService = new();
+
+    private Profesional? _profesionalSample;
 
     private TurnoService CrearService()
     {
@@ -28,7 +34,10 @@ public class TurnoServiceTests
             _profesionales.Object,
             _servicios.Object,
             _horarios.Object,
-            _bloqueos.Object
+            _bloqueos.Object,
+            _emailService.Object,
+            _auditService.Object,
+            _emailTemplateService.Object
         );
     }
 
@@ -52,11 +61,25 @@ public class TurnoServiceTests
         _personas.Setup(p => p.GetByIdAsync(It.IsAny<int>()))
             .ReturnsAsync(CrearPersonaValida());
 
-        _profesionales.Setup(p => p.GetByIdAsync(It.IsAny<int>()))
-            .ReturnsAsync(new Profesional(1, "MAT-123"));
+        var servicio = new Servicio("Consulta", "General", 30, 5000);
+        // Set Id for equality checks in tests
+        typeof(Servicio).GetProperty("Id", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public)!
+            .SetValue(servicio, 1);
 
         _servicios.Setup(s => s.GetByIdAsync(It.IsAny<int>()))
-            .ReturnsAsync(new Servicio("Consulta", "General", 30, 5000));
+            .ReturnsAsync(servicio);
+
+        var profesional = new Profesional(1, "MAT-123");
+        profesional.Servicios = new List<Servicio> { servicio };
+
+        _profesionalSample = profesional;
+
+        // Sanity check during test setup
+        if (!profesional.Servicios.Any(s => s.Id == 1))
+            throw new Exception("Setup failed: servicio id mismatch");
+
+        _profesionales.Setup(p => p.GetByIdAsync(It.IsAny<int>()))
+            .ReturnsAsync(profesional);
 
         _turnos.Setup(t => t.ExisteSolapamiento(
                 It.IsAny<int>(),
@@ -166,6 +189,9 @@ public class TurnoServiceTests
         var dto = CrearDtoValido();
 
         SetupDatosValidos();
+
+        // Validate the setup is correct before invoking service
+        Assert.True(_profesionalSample != null && _profesionalSample.Servicios.Any(s => s.Id == dto.ServicioId), "Test setup mismatch: the profesional does not contain the servicio with the expected Id");
 
         var turno = await service.CrearAsync(dto, 1);
 

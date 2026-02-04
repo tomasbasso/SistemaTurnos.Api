@@ -19,13 +19,20 @@ public class TurnosControllerTests
         {
             ProfesionalId = 1,
             ServicioId = 1,
-            FechaHoraInicio = DateTime.Now.AddHours(1)
+            // use deterministic future date (next week at 10:00) to avoid flaky tests
+            FechaHoraInicio = DateTime.Now.Date.AddDays(7).AddHours(10)
         };
 
         var response = await _client.PostAsJsonAsync(
             "/api/turnos",
             dto
         );
+
+        if (response.StatusCode != HttpStatusCode.Created)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.True(false, $"Expected Created but got {response.StatusCode}: {content}");
+        }
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
     }
@@ -54,12 +61,26 @@ public class TurnosControllerTests
         {
             ProfesionalId = 1,
             ServicioId = 1,
-            FechaHoraInicio = DateTime.Now.AddHours(1)
+            // use deterministic future date (next week at 11:00) to avoid interfering with other tests
+            FechaHoraInicio = DateTime.Now.Date.AddDays(7).AddHours(11)
         };
 
         var crear = await _client.PostAsJsonAsync("/api/turnos", dto);
+        if (crear.StatusCode != HttpStatusCode.Created)
+        {
+            var text = await crear.Content.ReadAsStringAsync();
+            Assert.True(false, $"Crear expected Created but got {crear.StatusCode}: {text}");
+        }
+
         Assert.Equal(HttpStatusCode.Created, crear.StatusCode);
-        var turno = await crear.Content.ReadFromJsonAsync<TurnoDto>();
+
+        var contentText = await crear.Content.ReadAsStringAsync();
+        var turno = System.Text.Json.JsonSerializer.Deserialize<TurnoDto>(
+            contentText,
+            new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true, Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() } }
+        );
+
+        Assert.True(turno != null && turno.Id > 0, $"Crear returned invalid turno: {contentText}");
 
         var response = await _client.PutAsync(
             $"/api/turnos/{turno!.Id}/cancelar",

@@ -11,8 +11,13 @@ public class Persona
     public string PasswordHash { get; set; } = null!;
     public Rol Rol { get; set; }
     public bool Activo { get; set; }
+    public string? ObraSocial { get; set; }
 
     public Profesional? Profesional { get; set; }
+
+    // Security: account lockout fields
+    public int FailedLoginAttempts { get; set; }
+    public DateTime? LockoutEnd { get; set; }
 
     public Persona() { }
 
@@ -24,5 +29,7 @@ public class Persona
         PasswordHash = passwordHash;
         Rol = rol;
         Activo = true;
+        FailedLoginAttempts = 0;
+        LockoutEnd = null;
     }
 }

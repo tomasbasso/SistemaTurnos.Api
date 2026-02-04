@@ -4,5 +4,6 @@ public enum Rol
 {
     Cliente,
     Profesional,
-    Administrador
+    Administrador,
+    Secretario
 }

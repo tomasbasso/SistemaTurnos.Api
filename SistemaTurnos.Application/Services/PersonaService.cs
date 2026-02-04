@@ -11,14 +11,10 @@ namespace SistemaTurnos.Application.Services
     public class PersonaService : IPersonaService
     {
         private readonly IPersonaRepository _repository;
-        private readonly IProfesionalRepository _profesionalRepository;
-        private readonly ITurnoRepository _turnoRepository;
 
-        public PersonaService(IPersonaRepository repository, IProfesionalRepository profesionalRepository, ITurnoRepository turnoRepository)
+        public PersonaService(IPersonaRepository repository)
         {
             _repository = repository;
-            _profesionalRepository = profesionalRepository;
-            _turnoRepository = turnoRepository;
         }
         public async Task<PagedResultDto<PersonaDto>> GetPagedAsync(
             string? busqueda,
@@ -65,14 +61,6 @@ namespace SistemaTurnos.Application.Services
 
             await _repository.AddAsync(persona);
             await _repository.SaveChangesAsync();
-
-            // Si es Profesional, crear registro en tabla Profesionales
-            if (persona.Rol == Domain.Enums.Rol.Profesional)
-            {
-                var profesional = new Profesional(persona.Id, "PENDIENTE"); // Matricula por defecto
-                await _profesionalRepository.AddAsync(profesional);
-                await _profesionalRepository.SaveChangesAsync();
-            }
 
             return MapToDto(persona);
         }
@@ -167,6 +155,12 @@ namespace SistemaTurnos.Application.Services
                 : MapToDto(persona);
         }
 
+        public async Task<List<PersonaDto>> GetPacientesByProfesionalAsync(int profesionalId)
+        {
+             var pacientes = await _repository.GetPacientesByProfesionalAsync(profesionalId);
+             return pacientes.Select(MapToDto).ToList();
+        }
+
         // =========================
         // GET PERSONA BY EMAIL (ENTITY)
         // =========================
@@ -175,10 +169,11 @@ namespace SistemaTurnos.Application.Services
             return await _repository.GetByEmailAsync(email);
         }
 
-        public async Task<IEnumerable<PersonaDto>> GetPacientesByProfesionalAsync(int profesionalId)
+        // Persist changes to a tracked Persona entity
+        public async Task UpdatePersonaAsync(Persona persona)
         {
-            var pacientes = await _turnoRepository.GetPacientesByProfesionalAsync(profesionalId);
-            return pacientes.Select(MapToDto).ToList();
+            // Persona is assumed to be tracked by the repository/DbContext; simply save changes
+            await _repository.SaveChangesAsync();
         }
 
         // =========================
@@ -190,9 +185,7 @@ namespace SistemaTurnos.Application.Services
             Nombre = p.Nombre,
             Dni = p.Dni,
             Email = p.Email,
-            Rol = p.Rol,
-            ProfesionalId = p.Profesional?.Id,
-            ProfesionalActivo = p.Profesional?.Activo ?? false
+            Rol = p.Rol
         };
     }
 }

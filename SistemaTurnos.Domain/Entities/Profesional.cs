@@ -10,6 +10,9 @@ namespace SistemaTurnos.Domain.Entities
 
         public string? FotoUrl { get; set; }
         public string? Descripcion { get; set; }
+        public string? Especialidad { get; set; }
+        public string? LinkedinUrl { get; set; }
+        public string? InstagramUrl { get; set; }
 
         public int PersonaId { get; set; }
         public Persona Persona { get; set; } = null!;

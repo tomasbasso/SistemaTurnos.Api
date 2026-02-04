@@ -16,7 +16,15 @@ public static class TurnoMapper
             Estado = turno.Estado,
             NombreProfesional = turno.Profesional?.Persona?.Nombre,
             NombrePaciente = turno.Persona?.Nombre,
-            NombreServicio = turno.Servicio?.Nombre
+            NombreServicio = turno.Servicio?.Nombre,
+            FotoProfesional = turno.Profesional?.FotoUrl,
+            EspecialidadProfesional = turno.Profesional?.Especialidad,
+            DescripcionProfesional = turno.Profesional?.Descripcion,
+            MatriculaProfesional = turno.Profesional?.Matricula,
+            DniPaciente = turno.Persona?.Dni,
+            DuracionMinutos = turno.Servicio?.DuracionMinutos ?? 0,
+            Precio = turno.Servicio?.Precio ?? 0,
+            MotivoConsulta = turno.MotivoConsulta
         };
     }
 }

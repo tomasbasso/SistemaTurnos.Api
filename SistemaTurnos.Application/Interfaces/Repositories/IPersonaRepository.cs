@@ -9,6 +9,9 @@ namespace SistemaTurnos.Application.Interfaces.Repositories
         Task<Persona?> GetByIdAsync(int id);
         Task<List<Persona>> GetAllAsync(string? busqueda);
         Task<Persona?> GetByEmailAsync(string email);
+        Task<Persona?> GetByDniAsync(string dni);
+        Task<List<Persona>> GetPacientesByProfesionalAsync(int profesionalId);
+        Task UpdateAsync(Persona persona);
         Task SaveChangesAsync();
 
         Task<(List<Persona> Items, int Total)>

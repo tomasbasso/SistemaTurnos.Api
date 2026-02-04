@@ -126,6 +126,9 @@
                 ?? throw new BusinessException("Profesional no encontrado");
              
              profesional.Descripcion = dto.Descripcion;
+             profesional.Especialidad = dto.Especialidad;
+             profesional.LinkedinUrl = dto.LinkedinUrl;
+             profesional.InstagramUrl = dto.InstagramUrl;
              
              await _profesionalRepository.SaveChangesAsync();
         }
@@ -147,6 +150,9 @@
             Matricula = p.Matricula,
             FotoUrl = p.FotoUrl,
             Descripcion = p.Descripcion,
+            Especialidad = p.Especialidad,
+            LinkedinUrl = p.LinkedinUrl,
+            InstagramUrl = p.InstagramUrl,
             Servicios = p.Servicios.Select(s => new ServicioDto 
             {
                 Id = s.Id,

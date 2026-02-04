@@ -76,6 +76,15 @@ public class PersonaRepository : IPersonaRepository
         return await _context.Personas.FirstOrDefaultAsync(p => p.Email == email);
     }
 
+    public async Task<List<Persona>> GetPacientesByProfesionalAsync(int profesionalId)
+    {
+        return await _context.Turnos
+            .Where(t => t.ProfesionalId == profesionalId)
+            .Select(t => t.Persona)
+            .Distinct()
+            .ToListAsync();
+    }
+
     public async Task<bool> ExisteDniAsync(string dni, int? id = null)
     {
         return await _context.Personas.AnyAsync(p =>
@@ -83,6 +92,17 @@ public class PersonaRepository : IPersonaRepository
             (id == null || p.Id != id));
     }
 
+
+    public async Task<Persona?> GetByDniAsync(string dni)
+    {
+        return await _context.Personas.FirstOrDefaultAsync(p => p.Dni == dni);
+    }
+
+    public async Task UpdateAsync(Persona persona)
+    {
+        _context.Personas.Update(persona);
+        await Task.CompletedTask;
+    }
 
     public async Task SaveChangesAsync()
     {

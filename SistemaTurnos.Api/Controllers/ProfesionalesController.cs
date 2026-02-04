@@ -6,7 +6,7 @@ using SistemaTurnos.Application.Interfaces.Services;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "Administrador, Profesional, Cliente")]
+[Authorize(Roles = "Administrador, Profesional, Cliente, Secretario")]
 public class ProfesionalesController : ControllerBase
 {
     private readonly IProfesionalService _service;

@@ -17,6 +17,8 @@ public class SistemaTurnosDbContext : DbContext
     public DbSet<BloqueoTiempo> BloqueosTiempo { get; set; }
     public DbSet<NotaClinica> NotasClinicas { get; set; }
     public DbSet<ArchivoAdjunto> ArchivosAdjuntos { get; set; }
+    public DbSet<AuditLog> AuditLogs { get; set; }
+    public DbSet<GlobalConfig> GlobalConfigs { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -26,6 +28,9 @@ public class SistemaTurnosDbContext : DbContext
 
             entity.Property(t => t.Estado)
                   .HasConversion<int>();
+
+            entity.Property(t => t.MotivoConsulta)
+                  .HasMaxLength(500);
 
             entity.HasOne(t => t.Persona)
                   .WithMany()
@@ -96,6 +101,9 @@ public class SistemaTurnosDbContext : DbContext
             entity.Property(p => p.Dni)
                 .IsRequired()
                 .HasMaxLength(20);
+            
+            entity.Property(p => p.ObraSocial)
+                .HasMaxLength(100);
 
             entity.HasIndex(p => p.Dni)
                 .IsUnique();
@@ -106,6 +114,13 @@ public class SistemaTurnosDbContext : DbContext
 
             entity.Property(p => p.Activo)
                 .HasDefaultValue(true);
+
+            entity.Property(p => p.FailedLoginAttempts)
+                .HasDefaultValue(0);
+
+            entity.Property(p => p.LockoutEnd)
+                .HasColumnType("datetime2")
+                .IsRequired(false);
             
             entity.HasOne(p => p.Profesional)
                 .WithOne(p => p.Persona)

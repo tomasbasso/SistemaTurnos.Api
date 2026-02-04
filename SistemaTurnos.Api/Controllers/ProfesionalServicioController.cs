@@ -7,7 +7,7 @@ namespace SistemaTurnos.Api.Controllers
 {
     [ApiController]
     [Route("api/profesionales/{profesionalId}/servicios")]
-    [Authorize(Roles = "Administrador, Profesional, Cliente")] 
+    [Authorize(Roles = "Administrador, Profesional, Cliente, Secretario")] 
     public class ProfesionalServicioController : ControllerBase
     {
         private readonly IProfesionalServicioService _profesionalServicioService;

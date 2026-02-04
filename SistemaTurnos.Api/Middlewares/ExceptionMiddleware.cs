@@ -1,6 +1,7 @@
 ﻿using SistemaTurnos.Application.Exceptions;
 using SistemaTurnos.Domain.Exceptions;
 using System.Text.Json;
+using Microsoft.Extensions.Hosting;
 
 namespace SistemaTurnos.Api.Middleware
 {
@@ -8,13 +9,16 @@ namespace SistemaTurnos.Api.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly ILogger<ExceptionMiddleware> _logger;
+        private readonly IHostEnvironment _env;
 
         public ExceptionMiddleware(
             RequestDelegate next,
-            ILogger<ExceptionMiddleware> logger)
+            ILogger<ExceptionMiddleware> logger,
+            IHostEnvironment env)
         {
             _next = next;
             _logger = logger;
+            _env = env;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -70,12 +74,22 @@ namespace SistemaTurnos.Api.Middleware
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 context.Response.ContentType = "application/json";
 
-                await context.Response.WriteAsync(JsonSerializer.Serialize(new
+                if (_env.IsDevelopment())
                 {
-                    error = ex.Message,
-                    innerError = ex.InnerException?.Message,
-                    stack = ex.StackTrace
-                }));
+                    await context.Response.WriteAsync(JsonSerializer.Serialize(new
+                    {
+                        error = ex.Message,
+                        innerError = ex.InnerException?.Message,
+                        stack = ex.StackTrace
+                    }));
+                }
+                else
+                {
+                    await context.Response.WriteAsync(JsonSerializer.Serialize(new
+                    {
+                        error = "Se produjo un error interno"
+                    }));
+                }
             }
         }
     }

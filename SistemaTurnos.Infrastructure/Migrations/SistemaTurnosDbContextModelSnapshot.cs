@@ -76,6 +76,39 @@ namespace SistemaTurnos.Infrastructure.Migrations
                     b.ToTable("ArchivosAdjuntos", (string)null);
                 });
 
+            modelBuilder.Entity("SistemaTurnos.Domain.Entities.AuditLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Accion")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Detalle")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Entidad")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("IpAddress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("UsuarioId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AuditLogs");
+                });
+
             modelBuilder.Entity("SistemaTurnos.Domain.Entities.BloqueoTiempo", b =>
                 {
                     b.Property<int>("Id")
@@ -104,6 +137,30 @@ namespace SistemaTurnos.Infrastructure.Migrations
                     b.ToTable("BloqueosTiempo", (string)null);
                 });
 
+            modelBuilder.Entity("SistemaTurnos.Domain.Entities.GlobalConfig", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Clave")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Descripcion")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Valor")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("GlobalConfigs");
+                });
+
             modelBuilder.Entity("SistemaTurnos.Domain.Entities.HorarioTrabajo", b =>
                 {
                     b.Property<int>("Id")
@@ -117,6 +174,9 @@ namespace SistemaTurnos.Infrastructure.Migrations
 
                     b.Property<int>("DiaSemana")
                         .HasColumnType("int");
+
+                    b.Property<DateTime?>("Fecha")
+                        .HasColumnType("datetime2");
 
                     b.Property<TimeOnly>("HoraFin")
                         .HasColumnType("time");
@@ -185,8 +245,20 @@ namespace SistemaTurnos.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<int>("FailedLoginAttempts")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<DateTime?>("LockoutEnd")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Nombre")
                         .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ObraSocial")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
@@ -221,7 +293,16 @@ namespace SistemaTurnos.Infrastructure.Migrations
                     b.Property<string>("Descripcion")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Especialidad")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("FotoUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("InstagramUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LinkedinUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Matricula")
@@ -296,6 +377,10 @@ namespace SistemaTurnos.Infrastructure.Migrations
 
                     b.Property<DateTime>("FechaHoraInicio")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("MotivoConsulta")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<int>("PersonaId")
                         .HasColumnType("int");

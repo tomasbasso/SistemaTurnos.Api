@@ -42,11 +42,34 @@ namespace SistemaTurnos.Application.Services
             }
 
             // Chequear solapamiento con horarios existentes
+            // Assign specific date if present
+            DateOnly? fechaDate = createDto.Fecha.HasValue ? DateOnly.FromDateTime(createDto.Fecha.Value) : null;
+            
+            // If specific date, force DayOfWeek
+            DayOfWeek diaSemana = createDto.Fecha.HasValue ? createDto.Fecha.Value.DayOfWeek : createDto.DiaSemana;
+
+            // Chequear solapamiento con horarios existentes
             var horariosExistentes = await _horarioRepository.GetByProfesionalIdAsync(profesionalId);
-            var solapado = horariosExistentes.Any(h =>
-                h.DiaSemana == createDto.DiaSemana &&
-                horaInicio < h.HoraFin &&
-                horaFin > h.HoraInicio);
+            
+            bool solapado;
+            if (createDto.Fecha.HasValue)
+            {
+                 // Overlap with other specific schedules on same date
+                 solapado = horariosExistentes.Any(h =>
+                    h.Fecha.HasValue &&
+                    h.Fecha.Value.Date == createDto.Fecha.Value.Date &&
+                    horaInicio < h.HoraFin &&
+                    horaFin > h.HoraInicio);
+            }
+            else
+            {
+                 // Overlap with other recurring schedules on same day of week
+                 solapado = horariosExistentes.Any(h =>
+                    !h.Fecha.HasValue &&
+                    h.DiaSemana == diaSemana &&
+                    horaInicio < h.HoraFin &&
+                    horaFin > h.HoraInicio);
+            }
 
             if (solapado)
             {
@@ -56,7 +79,8 @@ namespace SistemaTurnos.Application.Services
             var nuevoHorario = new HorarioTrabajo
             {
                 ProfesionalId = profesionalId,
-                DiaSemana = createDto.DiaSemana,
+                DiaSemana = diaSemana,
+                Fecha = createDto.Fecha,
                 HoraInicio = horaInicio,
                 HoraFin = horaFin
             };
@@ -97,6 +121,7 @@ namespace SistemaTurnos.Application.Services
                 Id = horario.Id,
                 ProfesionalId = horario.ProfesionalId,
                 DiaSemana = horario.DiaSemana,
+                Fecha = horario.Fecha,
                 HoraInicio = horario.HoraInicio.ToString("HH:mm"),
                 HoraFin = horario.HoraFin.ToString("HH:mm"),
                 Activo = horario.Activo

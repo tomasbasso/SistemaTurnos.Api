@@ -13,6 +13,9 @@ namespace SistemaTurnos.Application.DTOs
         public string Matricula { get; set; }
         public string? FotoUrl { get; set; }
         public string? Descripcion { get; set; }
+        public string? Especialidad { get; set; }
+        public string? LinkedinUrl { get; set; }
+        public string? InstagramUrl { get; set; }
         public ICollection<ServicioDto> Servicios { get; set; } = new List<ServicioDto>();
     }
 

@@ -1,6 +1,7 @@
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using MimeKit;
 using SistemaTurnos.Application.Interfaces.Services;
 using System;
@@ -11,10 +12,12 @@ namespace SistemaTurnos.Application.Services
     public class EmailService : IEmailService
     {
         private readonly IConfiguration _configuration;
+        private readonly ILogger<EmailService> _logger;
 
-        public EmailService(IConfiguration configuration)
+        public EmailService(IConfiguration configuration, ILogger<EmailService> logger)
         {
             _configuration = configuration;
+            _logger = logger;
         }
 
         public async Task SendEmailAsync(string to, string subject, string body)
@@ -24,6 +27,13 @@ namespace SistemaTurnos.Application.Services
                 var email = new MimeMessage();
                 var fromAddress = _configuration["EmailSettings:FromAddress"];
                 var fromName = _configuration["EmailSettings:FromName"] ?? "Sistema de Turnos";
+
+                // If FromAddress is not set, skip sending emails (useful for test environments)
+                if (string.IsNullOrWhiteSpace(fromAddress))
+                {
+                    _logger.LogWarning("Email not sent: EmailSettings:FromAddress not configured.");
+                    return;
+                }
 
                 email.From.Add(new MailboxAddress(fromName, fromAddress));
                 email.To.Add(MailboxAddress.Parse(to));
@@ -41,8 +51,8 @@ namespace SistemaTurnos.Application.Services
                 var user = _configuration["EmailSettings:Username"];
                 var pass = _configuration["EmailSettings:Password"];
 
-                // For demo purposes, we accept any certificate. In PROD remove this line.
-                smtp.ServerCertificateValidationCallback = (s, c, h, e) => true;
+                // Removed insecure certificate validation for Production safety.
+                // smtp.ServerCertificateValidationCallback = (s, c, h, e) => true;
 
                 await smtp.ConnectAsync(host, port, SecureSocketOptions.StartTls);
                 
@@ -56,9 +66,7 @@ namespace SistemaTurnos.Application.Services
             }
             catch (Exception ex)
             {
-                // Log exception (or rethrow if critical)
-                // For now we just print to console to avoid breaking the flow if email fails
-                Console.WriteLine($"[Error al enviar email]: {ex.Message}");
+                _logger.LogError(ex, "Error enviando email a {To}: {Message}", to, ex.Message);
             }
         }
     }

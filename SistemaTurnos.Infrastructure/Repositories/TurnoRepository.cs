@@ -135,10 +135,34 @@ public class TurnoRepository : ITurnoRepository
     }
     public async Task<IEnumerable<Persona>> GetPacientesByProfesionalAsync(int profesionalId)
     {
-        return await _context.Turnos
+        var personaIds = await _context.Turnos
             .Where(t => t.ProfesionalId == profesionalId)
-            .Select(t => t.Persona)
+            .Select(t => t.PersonaId)
             .Distinct()
+            .ToListAsync();
+            
+        return await _context.Personas
+            .Where(p => personaIds.Contains(p.Id))
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Turno>> GetAgendaGlobalAsync(DateTime? desde, DateTime? hasta)
+    {
+        var query = _context.Turnos
+            .Where(t => t.Estado != EstadoTurno.Cancelado);
+
+        if (desde.HasValue)
+            query = query.Where(t => t.FechaHoraInicio >= desde.Value);
+
+        if (hasta.HasValue)
+            query = query.Where(t => t.FechaHoraInicio <= hasta.Value);
+
+        return await query
+            .Include(t => t.Persona)
+            .Include(t => t.Profesional)
+                .ThenInclude(p => p.Persona)
+            .Include(t => t.Servicio)
+            .OrderBy(t => t.FechaHoraInicio)
             .ToListAsync();
     }
 }

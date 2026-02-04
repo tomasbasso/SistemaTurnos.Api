@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SistemaTurnos.Application.DTOs;
 using SistemaTurnos.Application.Interfaces.Services;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace SistemaTurnos.Api.Controllers
 {
@@ -18,6 +19,7 @@ namespace SistemaTurnos.Api.Controllers
 
         [HttpPost("login")]
         [AllowAnonymous]
+        [EnableRateLimiting("LoginPolicy")]
         [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)

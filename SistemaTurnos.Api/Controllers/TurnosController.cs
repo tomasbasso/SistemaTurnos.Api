@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using SistemaTurnos.Application.DTOs;
 
 [ApiController]
 ﻿[Route("api/turnos")]
@@ -28,12 +29,27 @@ using System.Security.Claims;
 ﻿            new { id = turno.Id },
 ﻿            turno.ToDto()
 ﻿        );
-﻿    }﻿
+﻿    }
+
+    // --------------------
+    // CREAR TURNO (SECRETARIA)
+    // --------------------
+    [HttpPost("secretaria")]
+    [Authorize(Roles = "Secretario, Administrador")]
+    public async Task<IActionResult> CrearSecretaria([FromBody] TurnoCreateBySecretariaDto dto)
+    {
+        var turno = await _service.CrearTurnoSecretariaAsync(dto);
+        return CreatedAtAction(
+            nameof(GetById),
+            new { id = turno.Id },
+            turno.ToDto()
+        );
+    }﻿
 ﻿    // --------------------
 ﻿    // OBTENER POR ID
 ﻿    // --------------------
 ﻿    [HttpGet("{id}")]
-﻿    [Authorize(Roles = "Administrador, Profesional, Cliente")]
+﻿    [Authorize(Roles = "Administrador, Profesional, Cliente, Secretario")]
 ﻿    public async Task<IActionResult> GetById(int id)
 ﻿    {
 ﻿        var turno = await _service.GetByIdAsync(id);
@@ -41,7 +57,7 @@ using System.Security.Claims;
 ﻿        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 ﻿        var userRole = User.FindFirstValue(ClaimTypes.Role);
 ﻿
-﻿        if (userRole != "Administrador" && userRole != "Profesional" && turno.PersonaId.ToString() != userId)
+﻿        if (userRole != "Administrador" && userRole != "Profesional" && userRole != "Secretario" && turno.PersonaId.ToString() != userId)
 ﻿        {
 ﻿            return Forbid();
 ﻿        }
@@ -53,7 +69,7 @@ using System.Security.Claims;
 ﻿    // CANCELAR
 ﻿    // --------------------
 ﻿    [HttpPut("{id}/cancelar")]
-﻿    [Authorize(Roles = "Administrador, Profesional, Cliente")]
+﻿    [Authorize(Roles = "Administrador, Profesional, Cliente, Secretario")]
 ﻿    public async Task<IActionResult> Cancelar(int id)
 ﻿    {
 ﻿        var turno = await _service.GetByIdAsync(id);
@@ -61,7 +77,7 @@ using System.Security.Claims;
 ﻿        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 ﻿        var userRole = User.FindFirstValue(ClaimTypes.Role);
 ﻿
-﻿        if (userRole != "Administrador" && userRole != "Profesional" && turno.PersonaId.ToString() != userId)
+﻿        if (userRole != "Administrador" && userRole != "Profesional" && userRole != "Secretario" && turno.PersonaId.ToString() != userId)
 ﻿        {
 ﻿            return Forbid();
 ﻿        }
@@ -84,7 +100,7 @@ using System.Security.Claims;
 ﻿    // AGENDA PROFESIONAL
 ﻿    // --------------------
 ﻿    [HttpGet("profesionales/{profesionalId}/agenda")]
-﻿    [Authorize(Roles = "Profesional,Administrador")]
+﻿    [Authorize(Roles = "Profesional,Administrador,Secretario")]
 ﻿    public async Task<IActionResult> AgendaProfesional(
 ﻿    int profesionalId,
 ﻿    DateTime? desde,
@@ -115,17 +131,26 @@ using System.Security.Claims;
 ﻿            return Ok(turnos.Select(t => t.ToDto()));
 ﻿        }﻿
 ﻿    // --------------------
-﻿    // TODOS LOS TURNOS (ADMIN Y PROFESIONAL)
+﻿    // TODOS LOS TURNOS (ADMIN, PROFESIONAL Y SECRETARIO)
 ﻿    // --------------------
 ﻿    [HttpGet("todos")]
-﻿    [Authorize(Roles = "Administrador, Profesional")]
-﻿    public async Task<IActionResult> TodosLosTurnos()
-﻿    {
-﻿        var turnos = await _service.GetAllTurnosAsync();
-﻿        return Ok(turnos.Select(t => t.ToDto()));
-﻿    }
-﻿    [HttpGet("slots-disponibles")]
-    [Authorize(Roles = "Administrador, Profesional, Cliente")]
+    [Authorize(Roles = "Administrador, Profesional, Secretario")]
+    public async Task<IActionResult> TodosLosTurnos()
+    {
+        var turnos = await _service.GetAllTurnosAsync();
+        return Ok(turnos.Select(t => t.ToDto()));
+    }
+
+    [HttpGet("agenda-global")]
+    [Authorize(Roles = "Administrador, Secretario")]
+    public async Task<IActionResult> GetAgendaGlobal([FromQuery] DateTime? desde, [FromQuery] DateTime? hasta)
+    {
+        var turnos = await _service.GetAgendaGlobalAsync(desde, hasta);
+        return Ok(turnos.Select(t => t.ToDto()));
+    }
+
+    [HttpGet("slots-disponibles")]
+    [Authorize(Roles = "Administrador, Profesional, Cliente, Secretario")]
     public async Task<IActionResult> GetSlotsDisponibles(
         [FromQuery] int profesionalId,
         [FromQuery] int servicioId,

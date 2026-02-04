@@ -42,15 +42,45 @@ namespace SistemaTurnos.Application.Services
                 throw new BusinessException("Credenciales inválidas");
             }
 
-            _logger.LogInformation("Usuario encontrado. Hash de la BD: {PasswordHash}", persona.PasswordHash);
+            // Check for lockout
+            var maxFailedAttempts = int.Parse(_configuration["Security:MaxFailedLoginAttempts"] ?? "5");
+            var lockoutMinutes = int.Parse(_configuration["Security:LockoutMinutes"] ?? "15");
+
+            if (persona.LockoutEnd.HasValue && persona.LockoutEnd.Value > DateTime.UtcNow)
+            {
+                _logger.LogWarning("Cuenta bloqueada para {Email} hasta {LockoutEnd}", dto.Email, persona.LockoutEnd.Value);
+                throw new BusinessException("Cuenta bloqueada. Intente más tarde");
+            }
 
             var passwordValida = Verify(dto.Password, persona.PasswordHash);
-            _logger.LogInformation("Resultado de la verificación de la contraseña: {PasswordValida}", passwordValida);
 
             if (!persona.Activo || !passwordValida)
             {
-                _logger.LogWarning("Login fallido para {Email}. Activo: {Activo}, Contraseña Válida: {PasswordValida}", dto.Email, persona.Activo, passwordValida);
+                // Increment failed attempts and possibly lock the account
+                persona.FailedLoginAttempts++;
+
+                if (persona.FailedLoginAttempts >= maxFailedAttempts)
+                {
+                    persona.LockoutEnd = DateTime.UtcNow.AddMinutes(lockoutMinutes);
+                    persona.FailedLoginAttempts = 0; // reset counter after lockout
+                    _logger.LogWarning("Cuenta bloqueada por intentos fallidos para {Email} hasta {LockoutEnd}", dto.Email, persona.LockoutEnd.Value);
+                }
+                else
+                {
+                    _logger.LogWarning("Login fallido para {Email}. Intentos fallidos: {Attempts}", dto.Email, persona.FailedLoginAttempts);
+                }
+
+                await _personaService.UpdatePersonaAsync(persona);
+
                 throw new BusinessException("Credenciales inválidas");
+            }
+
+            // Successful login: reset failed attempts and lockout
+            if (persona.FailedLoginAttempts > 0 || persona.LockoutEnd.HasValue)
+            {
+                persona.FailedLoginAttempts = 0;
+                persona.LockoutEnd = null;
+                await _personaService.UpdatePersonaAsync(persona);
             }
 
             var userDto = await _personaService.GetByEmailAsync(dto.Email);
@@ -98,14 +128,34 @@ namespace SistemaTurnos.Application.Services
                 new Claim(ClaimTypes.Role, persona.Rol.ToString())
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            // Use the configured JWT key; in Development, fall back to a non-secret dev key so local runs/tests don't crash.
+            var jwtKey = _configuration["Jwt:Key"];
+            if (string.IsNullOrWhiteSpace(jwtKey))
+            {
+                if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+                {
+                    jwtKey = "dev_insecure_jwt_key_for_development_only";
+                }
+                else
+                {
+                    throw new InvalidOperationException("JWT key is not configured. Set the environment variable 'Jwt__Key' or provide a valid key in configuration.");
+                }
+            }
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var expireMinutes = 60;
+            if (!int.TryParse(_configuration["Jwt:ExpireMinutes"], out expireMinutes))
+            {
+                _logger.LogWarning("Jwt:ExpireMinutes no configurado o inválido, usando {Default} minutos", expireMinutes);
+            }
 
             var token = new JwtSecurityToken(
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(int.Parse(_configuration["Jwt:ExpireMinutes"])),
+                expires: DateTime.Now.AddMinutes(expireMinutes),
                 signingCredentials: creds
             );
 

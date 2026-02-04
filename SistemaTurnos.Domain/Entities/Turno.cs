@@ -12,6 +12,7 @@ public class Turno
 
     public DateTime FechaHoraInicio { get; private set; }
     public DateTime FechaHoraFin { get; private set; }
+    public string? MotivoConsulta { get; private set; }
 
     public EstadoTurno Estado { get; private set; }
     public DateTime FechaCreacion { get; private set; }
@@ -30,7 +31,8 @@ public class Turno
         int profesionalId,
         int servicioId,
         DateTime inicio,
-        int duracionMinutos)
+        int duracionMinutos,
+        string? motivoConsulta = null)
     {
         PersonaId = personaId;
         ProfesionalId = profesionalId;
@@ -38,6 +40,7 @@ public class Turno
 
         FechaHoraInicio = inicio;
         FechaHoraFin = inicio.AddMinutes(duracionMinutos);
+        MotivoConsulta = motivoConsulta;
 
         Estado = EstadoTurno.Activo;
         FechaCreacion = DateTime.Now;

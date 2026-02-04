@@ -30,6 +30,15 @@ public class CustomWebApplicationFactory
                 options.UseInMemoryDatabase("SistemaTurnos_TestDb");
             });
 
+            // Test authentication: auto-authenticate requests using TestAuthHandler
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = "Test";
+                options.DefaultChallengeScheme = "Test";
+            })
+            .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, TestAuthHandler>(
+                "Test", _ => { });
+
 
             var sp = services.BuildServiceProvider();
             using var scope = sp.CreateScope();
@@ -40,31 +49,45 @@ public class CustomWebApplicationFactory
             db.Database.EnsureCreated();
 
 
-            db.Personas.Add(new Persona(
+            // Seed: persona
+            var persona = new Persona(
                 nombre: "Juan",
                 dni: "12345678",
                 email: "juan@test.com",
-                passwordHash: "some_hash",
+                passwordHash: BCrypt.Net.BCrypt.HashPassword("password"),
                 rol: Rol.Cliente
-            ));
+            );
+            db.Personas.Add(persona);
+            db.SaveChanges();
 
-            db.Profesionales.Add(new Profesional(
-                personaId: 1,
-                matricula: "MAT-001"
-            ));
-
-            db.Servicios.Add(new Servicio(
+            // Seed: servicio
+            var servicio = new Servicio(
                 nombre: "Consulta",
                 descripcion: "Consulta general",
                 duracionMinutos: 30,
                 precio: 5000
-            ));
+            );
+            db.Servicios.Add(servicio);
 
+            // Seed: profesional (vincular servicio)
+            var profesional = new Profesional(personaId: persona.Id, matricula: "MAT-001");
+            profesional.Servicios.Add(servicio);
+            db.Profesionales.Add(profesional);
+
+            // Seed: horario del profesional (permite reservar) - full day to avoid flaky tests
+            db.HorariosTrabajo.Add(new HorarioTrabajo {
+                Profesional = profesional,
+                DiaSemana = DateTime.Now.DayOfWeek,
+                HoraInicio = TimeOnly.Parse("00:00"),
+                HoraFin = TimeOnly.Parse("23:59")
+            });
+
+            // Seed: turno histórico (in the past, avoid conflicts with today's slots)
             db.Turnos.Add(new Turno(
-                personaId: 1,
-                profesionalId: 1,
-                servicioId: 1,
-                inicio: DateTime.Now.AddHours(-1),
+                personaId: persona.Id,
+                profesionalId: profesional.Id,
+                servicioId: servicio.Id,
+                inicio: DateTime.Now.AddDays(-1),
                 duracionMinutos: 30
             ));
 

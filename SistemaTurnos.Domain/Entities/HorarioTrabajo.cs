@@ -11,6 +11,8 @@ namespace SistemaTurnos.Domain.Entities
         public Profesional Profesional { get; set; } = null!;
 
         public DayOfWeek DiaSemana { get; set; }
+        
+        public DateTime? Fecha { get; set; }
 
         public TimeOnly HoraInicio { get; set; }
 
